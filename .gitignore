@@ -4,3 +4,7 @@ doc
 *.exe
 *.out
 out
+in
+mango
+baseline
+sample
