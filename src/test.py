@@ -11,7 +11,7 @@ def win(id):
         sys.stdout.write('draw\n')
     else:
         sys.stdout.write('ai' + str(id) + ' wins!\n')
-    # os.system("run.bat")
+    os.system("run.bat")
     sys.exit(0)
 
 
@@ -33,7 +33,7 @@ class AI:
     def receive(self):
         return self.proc.stdout.readline().strip().decode()
 
-    @timeout_decorator.timeout(seconds=5, use_signals=True)
+    # @timeout_decorator.timeout(seconds=5, use_signals=True)
     def init(self):
         if self.human == 0:
             self.proc = subprocess.Popen(self.path,
@@ -42,7 +42,7 @@ class AI:
             self.send(self.id)
             self.name = self.receive()
 
-    @timeout_decorator.timeout(seconds=5, use_signals=True)
+    # @timeout_decorator.timeout(seconds=5, use_signals=True)
     def action(self, a, b):
         if self.human == 1:
             value = sys.stdin.readline().strip().split(' ')
@@ -122,10 +122,10 @@ def judge():
     # debug begin
     # print(sys.argv[1])
     # print(sys.argv[2])
-    # ai0, ai1 = AI("./baseline.exe", 0), AI("./mango.exe", 1)
+    ai0, ai1 = AI("./baseline.exe", 0), AI("./mango.exe", 1)
     # debug end
 
-    ai0, ai1 = AI(sys.argv[1], 0), AI(sys.argv[2], 1)
+    # ai0, ai1 = AI(sys.argv[1], 0), AI(sys.argv[2], 1)
     try_init(ai0, ai1)
     a, b = -1, -1
     for turn in range(1, 15 * 15 + 1):
@@ -164,15 +164,15 @@ def judge():
     # os.system("./run.bat")
 
 
-# # debug begin
-# judge()
-# # debug end
+# debug begin
+judge()
+# debug end
 
-if __name__ == '__main__':
-    if not len(sys.argv) == 3:
-        sys.stderr.write('usage:   python3 judge.py ai0Path ai1Path\n')
-        sys.stderr.write('         python3 judge.py human aiPath\n')
-        sys.stderr.write('example: python3 judge.py ./sample_ai ./sample_ai\n')
-        sys.stderr.write('         python3 judge.py human ./sample_ai\n')
-        sys.exit(1)
-    judge()
+# if __name__ == '__main__':
+#     if not len(sys.argv) == 3:
+#         sys.stderr.write('usage:   python3 judge.py ai0Path ai1Path\n')
+#         sys.stderr.write('         python3 judge.py human aiPath\n')
+#         sys.stderr.write('example: python3 judge.py ./sample_ai ./sample_ai\n')
+#         sys.stderr.write('         python3 judge.py human ./sample_ai\n')
+#         sys.exit(1)
+#     judge()

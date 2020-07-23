@@ -260,10 +260,6 @@ private:
         return pos;
     }
 
-    bool checkswap()
-    {
-    }
-
     int mmdfs(int side, int alpha, int beta, int dep, Pos &pos) //min-max
     {
         // if (dep == 5)
@@ -315,6 +311,21 @@ private:
         //              const std::pair<Pos, int> &b) { return a.second > b.second; });
 
         return mxval;
+    }
+
+    Pos checkswap()
+    {
+        // fout << "swapcheck" << std::endl;
+        // double _t = std::clock();
+        // Pos ret, pos, npos; //not sawp pos
+        // int val, nval;
+        // nval = mmdfs(ai_side, -INF, INF, 1, npos);
+        // val = mmdfs(ai_side ^ 1, -INF, INF, 1, pos);
+        // if (val< nval)
+
+        //  puton(ret.first, ret.second, ai_side);   
+        // fout << "dfscnt:" << dfscnt << '\n';
+        // fout << "time:" << (std::clock() - _t) / CLOCKS_PER_SEC << '\n';
     }
 
     void IDAstar();

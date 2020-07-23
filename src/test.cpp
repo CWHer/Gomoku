@@ -238,11 +238,12 @@ public:
 
 Box box;
 int dfscnt = 0;
+int max_dep;
 int mmdfs(int side, int alpha, int beta, int dep, Pos &pos) //min-max
 {
     // if (dep == 5)
     dfscnt++;
-    if (dep == 5)
+    if (dep == max_dep)
     {
         // box.fprint();
         // fout << box.getvalue(ai_side) << '\n';
@@ -319,6 +320,7 @@ int main()
     box.print();
     std::cout << box.getvalue(1) << std::endl;
     Pos pos;
+    max_dep = 7;
     mmdfs(ai_side, -INF, INF, 1, pos);
     printpos(pos);
 
