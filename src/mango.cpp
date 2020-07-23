@@ -107,7 +107,7 @@ private:
                         if (p.second && blocked)
                             continue;
                         if (p.second || blocked)
-                            score[board[i][j]] += values[p.first] / 2;
+                            score[board[i][j]] += values[p.first] / 100;
                         else
                             score[board[i][j]] += values[p.first];
                     }
@@ -188,13 +188,13 @@ public:
     }
     bool empty33(int x, int y)
     {
-        int len = y - 1 >= 0 ? y - 1 : y;
-        int ret = bbs[x] << len >> (y - 1) & 31;
+        int len = y - 1 >= 0 ? 0 : 1;
+        int ret = bbs[x] << len >> (y - 1) & 7;
         if (x - 1 >= 0)
-            ret |= bbs[x - 1] << len >> (y - 1) & 31;
+            ret |= bbs[x - 1] << len >> (y - 1) & 7;
 
         if (x + 1 < N)
-            ret |= bbs[x + 1] << len >> (y - 1) & 31;
+            ret |= bbs[x + 1] << len >> (y - 1) & 7;
 
         return !ret;
     }
@@ -280,7 +280,7 @@ private:
                 int col = box.getpos(i, j);
                 if (col != -1)
                     continue;
-                if (box.empty55(i, j))
+                if (box.empty33(i, j))
                     continue;
 
                 if (box.puton(i, j, side))

@@ -168,10 +168,10 @@ public:
             }
     }
     // check empty in 5*5
-    bool rempty55(int x, int y)
+    bool rempty33(int x, int y)
     {
-        for (int i = x - 2; i <= x + 2; ++i)
-            for (int j = y - 2; j <= y + 2; ++j)
+        for (int i = x - 1; i <= x + 1; ++i)
+            for (int j = y - 1; j <= y + 1; ++j)
                 if (inboard(i, j) && getpos(i, j) != -1)
                     return 0;
         return 1;
@@ -198,13 +198,13 @@ public:
     }
     bool empty33(int x, int y)
     {
-        int len = y - 1 >= 0 ? y - 1 : y;
-        int ret = bbs[x] << len >> (y - 1) & 31;
+        int len = y - 1 >= 0 ? 0 : 1;
+        int ret = bbs[x] << len >> (y - 1) & 7;
         if (x - 1 >= 0)
-            ret |= bbs[x - 1] << len >> (y - 1) & 31;
+            ret |= bbs[x - 1] << len >> (y - 1) & 7;
 
         if (x + 1 < N)
-            ret |= bbs[x + 1] << len >> (y - 1) & 31;
+            ret |= bbs[x + 1] << len >> (y - 1) & 7;
 
         return !ret;
     }
@@ -258,9 +258,15 @@ int mmdfs(int side, int alpha, int beta, int dep, Pos &pos) //min-max
             int col = box.getpos(i, j);
             if (col != -1)
                 continue;
-            if (box.empty55(i, j))
+            if (box.empty33(i, j))
                 continue;
 
+            if (box.rempty33(i, j) != box.empty33(i, j))
+            {
+                box.print();
+                cout << box.rempty33(i, j) << endl;
+                cout << box.empty33(i, j) << endl;
+            }
 
             if (box.puton(i, j, side))
             {
