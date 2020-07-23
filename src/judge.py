@@ -33,7 +33,7 @@ class AI:
     def receive(self):
         return self.proc.stdout.readline().strip().decode()
 
-    # @timeout_decorator.timeout(5)
+    # @timeout_decorator.timeout(seconds=5, use_signals=True)
     def init(self):
         if self.human == 0:
             self.proc = subprocess.Popen(self.path,
@@ -42,7 +42,7 @@ class AI:
             self.send(self.id)
             self.name = self.receive()
 
-    # @timeout_decorator.timeout(5)
+    # @timeout_decorator.timeout(seconds=5, use_signals=True)
     def action(self, a, b):
         if self.human == 1:
             value = sys.stdin.readline().strip().split(' ')
@@ -80,20 +80,25 @@ class Board:
         # 8 Directions
         dx = [1, 1, -1, -1, 0, 0, 1, -1]
         dy = [1, -1, 1, -1, 1, -1, 0, 0]
-        for i in range(8):
-            curx, cury = x + dx[i], y + dy[i]
-            if curx < 0 or curx >= 15 or cury < 0 or cury >= 15: continue
-            flg = True
-            for step in range(4):
-                if self.board[curx][cury] != side:
-                    flg = False
-                    break
-                curx, cury = curx + dx[i], cury + dy[i]
-                if curx < 0 or curx >= 15 or cury < 0 or cury >= 15:
-                    flg = False
-                    break
-            if flg:
-                return 1
+        for xx in range(0, 15):
+            for yy in range(0, 15):
+
+                for i in range(8):
+                    curx, cury = xx, yy
+                    flg = True
+                    for _ in range(5):
+                        if curx < 0 or curx >= 15 or cury < 0 or cury >= 15:
+                            flg = False
+                            break
+
+                        if self.board[curx][cury] != side and (curx != x
+                                                               or cury != y):
+                            flg = False
+                            break
+                        curx, cury = curx + dx[i], cury + dy[i]
+                        # print(_, curx, cury, self.board[curx][cury], side)
+                    if flg:
+                        return 1
 
         return 0
 
@@ -120,7 +125,7 @@ def judge():
     ai0, ai1 = AI("./baseline.exe", 0), AI("./mango.exe", 1)
     # debug end
 
-    # ai0, ai1 = AI(sys.argv[1], 0), AI(sys.argv[2], 0)
+    # ai0, ai1 = AI(sys.argv[1], 0), AI(sys.argv[2], 1)
     try_init(ai0, ai1)
     a, b = -1, -1
     for turn in range(1, 15 * 15 + 1):

@@ -8,6 +8,8 @@
 #include <random>
 #include <iostream>
 #include <fstream>
+#include <cmath>
+#include <ctime>
 #include <iomanip>
 
 typedef std::pair<int, int> Pos;
@@ -19,6 +21,10 @@ const int N = 15;
 const int INF = 1 << 30;
 const int dx[] = {0, -1, -1, -1, 0, 1, 1, 1};
 const int dy[] = {-1, -1, 0, 1, 1, 1, 0, -1};
+const int values[] = {1, 10, (int)1e3, (int)1e6};
+
+class Box;
+class Mango;
 
 //debug begin
 std::ofstream fout("mango.out"); //log file
@@ -29,7 +35,7 @@ void printpos(Pos pos)
 //debug end
 
 //utility begin
-inline bool inboard(int x, int y) //inside board
+inline bool inboard(int &x, int &y) //inside board
 {
     return x >= 0 && x < N && y >= 0 && y < N;
 }
@@ -41,25 +47,31 @@ inline int random_int(int min, int max)
 {
     static std::random_device rd;
     static std::mt19937 generator(rd());
-    static std::uniform_int_distribution<int> distribution(min, max);
+    std::uniform_int_distribution<int> distribution(min, max);
     return distribution(generator);
+}
+inline int hamilton(int &x, int &y) //hamilton dist from (7,7) center
+{
+    return abs(x - 7) + abs(y - 7);
 }
 //utility end
 
-class Box //evaluate box
+class Box //board
 {
 
 private:
-    // int type[N][N];
     unsigned seed[N][N];
     unsigned hashvalue; //condition
     int board[N][N];
+    int bbs[N];   //board bit set
     int score[2]; //black/white
     // int calc()    //use after puton
     // {
 
     // }
-    inline std::pair<int, bool> trace(int x, int y, int dir, int col) //whether end is blocked
+    // longest continuous trace
+    // plus whether end is blocked
+    inline std::pair<int, bool> trace(int x, int y, int dir, int col)
     {
         int ret = 0;
         while (true)
@@ -72,8 +84,9 @@ private:
             ret++;
         }
     }
-    void calc() //evaluate all
-    {           //to be optimized: only calc newly added
+    //evaluate all the board
+    void calc() //to be optimized: only calc newly added
+    {
         score[0] = score[1] = 0;
         for (int i = 0; i < N; ++i)
             for (int j = 0; j < N; ++j)
@@ -81,7 +94,7 @@ private:
                 {
                     //to avoid multiple calc
                     //only dir in [0,4)
-                    //also opposite dir must not be placed with cur one
+                    //also opposite dir must not be occupied with cur one
                     for (int dir = 0; dir < 4; ++dir)
                     {
                         std::pair<int, bool> p;
@@ -93,7 +106,10 @@ private:
                         p = trace(i, j, dir, board[i][j]);
                         if (p.second && blocked)
                             continue;
-                        score[board[i][j]] += 1 << ((p.first + 1 - (p.second | blocked)) << 4);
+                        if (p.second || blocked)
+                            score[board[i][j]] += values[p.first] / 2;
+                        else
+                            score[board[i][j]] += values[p.first];
                     }
                 }
     }
@@ -109,31 +125,78 @@ public:
             }
 
         std::memset(board, -1, sizeof(board));
+        std::memset(bbs, 0, sizeof(bbs));
         std::memset(score, 0, sizeof(score));
     }
-    void puton(Pos pos, int col)
+    //return 1 if 5 in a row
+    bool puton(int x, int y, int col)
     {
-        board[pos.first][pos.second] = col;
-        hashvalue ^= seed[pos.first][pos.second];
-        hashvalue ^= seed[pos.first][pos.second] * (unsigned)(col + 2);
+        board[x][y] = col;
+        hashvalue ^= seed[x][y];
+        hashvalue ^= seed[x][y] * (unsigned)(col + 2);
+        bbs[x] ^= 1 << y;
+        for (int dir = 0; dir < 4; ++dir)
+            if (trace(x, y, dir, col).first +
+                    trace(x, y, opd(dir), col).first >=
+                4)
+                return 1;
+        return 0;
     }
-    void putback(Pos pos)
+    void putback(int x, int y)
     {
-        hashvalue ^= seed[pos.first][pos.second] * (unsigned)(board[pos.first][pos.second] + 2);
-        hashvalue ^= seed[pos.first][pos.second];
-        board[pos.first][pos.second] = -1;
+        bbs[x] ^= 1 << y;
+        hashvalue ^= seed[x][y] * (unsigned)(board[x][y] + 2);
+        hashvalue ^= seed[x][y];
+        board[x][y] = -1;
     }
+
     unsigned hashresult()
     {
         return hashvalue;
     }
+
     int getvalue(int col)
     {
+        calc();
         return score[col] - score[1 ^ col];
     }
-    int getpos(Pos pos)
+
+    int getpos(int x, int y)
     {
-        return board[pos.first][pos.second];
+        return board[x][y];
+    }
+    //check empty in 5*5
+    bool empty55(int x, int y)
+    {
+        int len = y - 2 >= 0 ? 0
+                             : y - 1 >= 0 ? 1 : 2;
+        int ret = bbs[x] << len >> (y - 2) & 31;
+        if (x - 1 >= 0)
+        {
+            ret |= bbs[x - 1] << len >> (y - 2) & 31;
+            if (x - 2 >= 0)
+                ret |= bbs[x - 2] << len >> (y - 2) & 31;
+        }
+
+        if (x + 1 < N)
+        {
+            ret |= bbs[x + 1] << len >> (y - 2) & 31;
+            if (x + 2 < N)
+                ret |= bbs[x + 2] << len >> (y - 2) & 31;
+        }
+        return !ret;
+    }
+    bool empty33(int x, int y)
+    {
+        int len = y - 1 >= 0 ? y - 1 : y;
+        int ret = bbs[x] << len >> (y - 1) & 31;
+        if (x - 1 >= 0)
+            ret |= bbs[x - 1] << len >> (y - 1) & 31;
+
+        if (x + 1 < N)
+            ret |= bbs[x + 1] << len >> (y - 1) & 31;
+
+        return !ret;
     }
 };
 
@@ -141,6 +204,8 @@ class Mango
 {
 private:
     Box box;
+    int dfscnt;
+    int max_dep;
     int w[N][N];
 
     //prefer dense places
@@ -151,7 +216,7 @@ private:
         if (turn == 1 && ai_side == 0)
         {
             Pos pos(7, 7);
-            puton(pos, ai_side);
+            puton(7, 7, ai_side);
             return pos;
         }
         Pos pos;
@@ -159,7 +224,7 @@ private:
         for (int i = 0; i < N; ++i)
             for (int j = 0; j < N; ++j)
             {
-                int col = box.getpos(Pos(i, j));
+                int col = box.getpos(i, j);
                 if (col != -1)
                     continue;
 
@@ -168,27 +233,28 @@ private:
                 {
                     int x = i + dx[dir];
                     int y = j + dy[dir];
-                    if (!inboard(x, y))
+                    if (!inboard(i, j))
                     {
                         sum--;
                         continue;
                     }
-                    int nxt = box.getpos(Pos(x, y));
+                    int nxt = box.getpos(i, j);
                     if (nxt == -1)
                         continue;
                     sum += (nxt ^ ai_side) * 3 + 1;
                 }
 
                 //debug
-                fout << sum << '\n';
+                // fout << sum << '\n';
 
-                if (sum > mxval)
+                if (sum > mxval ||
+                    (sum == mxval && hamilton(i, j) < hamilton(pos.first, pos.second)))
                 {
                     mxval = sum;
                     pos = Pos(i, j);
                 }
             }
-        box.puton(pos, ai_side);
+        box.puton(pos.first, pos.second, ai_side);
         printpos(pos);
         print();
         return pos;
@@ -198,10 +264,11 @@ private:
     {
     }
 
-    int mmdfs(int side, int &alpha, int &beta, int dep, Pos &pos) //min-max
+    int mmdfs(int side, int alpha, int beta, int dep, Pos &pos) //min-max
     {
         // if (dep == 5)
-        if (dep == 3)
+        dfscnt++;
+        if (dep == max_dep)
             return box.getvalue(ai_side);
 
         // std::vector<std::pair<Pos, int>> w;
@@ -210,49 +277,73 @@ private:
         for (int i = 0; i < N; ++i)
             for (int j = 0; j < N; ++j)
             {
-                int col = box.getpos(Pos(i, j));
+                int col = box.getpos(i, j);
                 if (col != -1)
                     continue;
-                box.puton(Pos(i, j), side);
-                int val = -mmdfs(side ^ 1, alpha, beta, dep + 1, pos);
-                if (val > mxval)
+                if (box.empty55(i, j))
+                    continue;
+
+                if (box.puton(i, j, side))
+                {
+                    if (dep == 1)
+                        pos = Pos(i, j);
+                    box.putback(i, j);
+                    return INF / 2 - dep * 1e7;
+                    //win with least steps
+                    //while lose with most steps
+                }
+
+                int val = -mmdfs(side ^ 1, -beta, -alpha, dep + 1, pos);
+                if (val > mxval ||
+                    (val == mxval && hamilton(i, j) < hamilton(ret.first, ret.second)))
                 {
                     mxval = val, ret = Pos(i, j);
-                    fout << val << " pos:" << ret.first << " " << ret.second << '\n';
+                    if (dep == 1)
+                        pos = ret;
+                    // fout << val << " pos:" << ret.first << " " << ret.second << '\n';
                 }
 
                 // w.push_back(std::pair<Pos, int>(Pos(i, j), -val));
-                box.putback(Pos(i, j));
+                box.putback(i, j);
+
+                alpha = std::max(alpha, mxval);
+                if (mxval > beta)
+                    return mxval;
             }
         // std::sort(w.begin(), w.end(),
         //           [](const std::pair<Pos, int> &a,
         //              const std::pair<Pos, int> &b) { return a.second > b.second; });
-        if (dep == 1)
-        {
-            // pos = w.front().first;
-            pos = ret;
-            return 1; //search complete
-        }
+
         return mxval;
     }
 
     void IDAstar();
 
 public:
-    void puton(Pos pos, int col)
+    void puton(int x, int y, int col)
     {
-        box.puton(pos, col);
+        box.puton(x, y, col);
     }
     Pos run()
     {
         // return randput();
-        int alpha = -INF, beta = INF;
+        if (turn == 1)
+            return randput();
         Pos ret;
-        if (mmdfs(ai_side, alpha, beta, 1, ret))
-        {
-            puton(ret, ai_side);
-            return ret;
-        }
+        dfscnt = 0;
+
+        // fout << random_Int(0, 2) << '\n';
+        max_dep = 5;
+        // if (random_Int(0, 2))
+        //     max_dep = 3;
+        double _t = std::clock();
+
+        mmdfs(ai_side, -INF, INF, 1, ret);
+
+        puton(ret.first, ret.second, ai_side);
+        fout << "dfscnt:" << dfscnt << '\n';
+        fout << "time:" << (std::clock() - _t) / CLOCKS_PER_SEC << '\n';
+        return ret;
     }
 
     //debug
@@ -263,7 +354,7 @@ public:
         {
             for (int j = 0; j < N; ++j)
             {
-                int col = box.getpos(Pos(i, j));
+                int col = box.getpos(i, j);
                 fout << (col == -1 ? '.' : col ? '1' : '0');
             }
             fout << '\n';
@@ -309,7 +400,7 @@ Pos action(Pos loc)
     ai.print();
     fout << loc.first << ' ' << loc.second << '\n';
     if (loc.first != -1)
-        ai.puton(loc, ai_side ^ 1);
+        ai.puton(loc.first, loc.second, ai_side ^ 1);
     ai.print();
     return ai.run();
     // if (turn == 2 && ai_side == 1)
