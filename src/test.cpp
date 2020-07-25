@@ -124,6 +124,11 @@ public:
     }
     bool puton(int x, int y, int col)
     {
+        // if (x == 2 && y == 0 && col == 0)
+        // {
+        //     putchar('\n');
+        // }
+
         board[x][y] = col;
         hashvalue ^= seed[x][y];
         hashvalue ^= seed[x][y] * (unsigned)(col + 2);
@@ -180,31 +185,33 @@ public:
     {
         int len = y - 2 >= 0 ? 0
                              : y - 1 >= 0 ? 1 : 2;
-        int ret = bbs[x] << len >> (y - 2) & 31;
+        int p = y - 2 + len;
+        int ret = bbs[x] << len >> p & 31;
         if (x - 1 >= 0)
         {
-            ret |= bbs[x - 1] << len >> (y - 2) & 31;
+            ret |= bbs[x - 1] << len >> p & 31;
             if (x - 2 >= 0)
-                ret |= bbs[x - 2] << len >> (y - 2) & 31;
+                ret |= bbs[x - 2] << len >> p & 31;
         }
 
         if (x + 1 < N)
         {
-            ret |= bbs[x + 1] << len >> (y - 2) & 31;
+            ret |= bbs[x + 1] << len >> p & 31;
             if (x + 2 < N)
-                ret |= bbs[x + 2] << len >> (y - 2) & 31;
+                ret |= bbs[x + 2] << len >> p & 31;
         }
         return !ret;
     }
     bool empty33(int x, int y)
     {
         int len = y - 1 >= 0 ? 0 : 1;
-        int ret = bbs[x] << len >> (y - 1) & 7;
+        int p = y - 1 + len;
+        int ret = bbs[x] << len >> p & 7;
         if (x - 1 >= 0)
-            ret |= bbs[x - 1] << len >> (y - 1) & 7;
+            ret |= bbs[x - 1] << len >> p & 7;
 
         if (x + 1 < N)
-            ret |= bbs[x + 1] << len >> (y - 1) & 7;
+            ret |= bbs[x + 1] << len >> p & 7;
 
         return !ret;
     }
@@ -234,6 +241,24 @@ public:
             fout << '\n';
         }
     }
+    int check33(int xx, int yy) //a density-biased evaluate func
+    {                           //implements like XO chess
+        int ret = 0;
+        for (int dir = 0; dir < 8; ++dir)
+        {
+            int x = xx + dx[dir];
+            int y = yy + dy[dir];
+            if (!inboard(x, y))
+            {
+                ret--;
+                continue;
+            }
+            int nxt = getpos(x, y);
+            if (nxt != -1)
+                ret += (nxt ^ ai_side) * 2 + 1;
+        }
+        return ret;
+    }
 };
 
 Box box;
@@ -256,18 +281,23 @@ int mmdfs(int side, int alpha, int beta, int dep, Pos &pos) //min-max
     for (int i = 0; i < N; ++i)
         for (int j = 0; j < N; ++j)
         {
+            // if (i == 2 && j == 0 && side == 0)
+            // {
+            //     putchar('\n');
+            // }
+
             int col = box.getpos(i, j);
             if (col != -1)
                 continue;
             if (box.empty33(i, j))
                 continue;
 
-            if (box.rempty33(i, j) != box.empty33(i, j))
-            {
-                box.print();
-                cout << box.rempty33(i, j) << endl;
-                cout << box.empty33(i, j) << endl;
-            }
+            // if (box.rempty33(i, j) != box.empty33(i, j))
+            // {
+            //     box.print();
+            //     cout << box.rempty33(i, j) << endl;
+            //     cout << box.empty33(i, j) << endl;
+            // }
 
             if (box.puton(i, j, side))
             {
@@ -281,7 +311,7 @@ int mmdfs(int side, int alpha, int beta, int dep, Pos &pos) //min-max
 
             int val = -mmdfs(side ^ 1, -beta, -alpha, dep + 1, pos);
             if (val > mxval ||
-                (val == mxval && hamilton(i, j) < hamilton(ret.first, ret.second)))
+                (val == mxval && box.check33(i, j) > box.check33(ret.first, ret.second)))
             {
                 mxval = val, ret = Pos(i, j);
                 if (dep == 1)
@@ -308,6 +338,21 @@ int mmdfs(int side, int alpha, int beta, int dep, Pos &pos) //min-max
 
     return mxval;
 }
+
+Pos checkswap()
+{
+    fout << "swapcheck" << std::endl;
+    double _t = std::clock();
+    Pos ret;
+    int val, nval; //not sawp val
+    val = mmdfs(ai_side ^ 1, -INF, INF, 1, ret);
+    nval = mmdfs(ai_side, -INF, INF, 1, ret);
+    if (val < nval)
+        ret = Pos(-1, -1);
+    fout << "dfscnt:" << dfscnt << '\n';
+    fout << "time:" << (std::clock() - _t) / CLOCKS_PER_SEC << '\n';
+}
+
 int main()
 {
     double t = clock();
@@ -320,7 +365,7 @@ int main()
     box.print();
     std::cout << box.getvalue(1) << std::endl;
     Pos pos;
-    max_dep = 7;
+    max_dep = 3;
     mmdfs(ai_side, -INF, INF, 1, pos);
     printpos(pos);
 

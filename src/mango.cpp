@@ -170,33 +170,53 @@ public:
     {
         int len = y - 2 >= 0 ? 0
                              : y - 1 >= 0 ? 1 : 2;
-        int ret = bbs[x] << len >> (y - 2) & 31;
+        int p = y - 2 + len;
+        int ret = bbs[x] << len >> p & 31;
         if (x - 1 >= 0)
         {
-            ret |= bbs[x - 1] << len >> (y - 2) & 31;
+            ret |= bbs[x - 1] << len >> p & 31;
             if (x - 2 >= 0)
-                ret |= bbs[x - 2] << len >> (y - 2) & 31;
+                ret |= bbs[x - 2] << len >> p & 31;
         }
 
         if (x + 1 < N)
         {
-            ret |= bbs[x + 1] << len >> (y - 2) & 31;
+            ret |= bbs[x + 1] << len >> p & 31;
             if (x + 2 < N)
-                ret |= bbs[x + 2] << len >> (y - 2) & 31;
+                ret |= bbs[x + 2] << len >> p & 31;
         }
         return !ret;
     }
     bool empty33(int x, int y)
     {
         int len = y - 1 >= 0 ? 0 : 1;
-        int ret = bbs[x] << len >> (y - 1) & 7;
+        int p = y - 1 + len;
+        int ret = bbs[x] << len >> p & 7;
         if (x - 1 >= 0)
-            ret |= bbs[x - 1] << len >> (y - 1) & 7;
+            ret |= bbs[x - 1] << len >> p & 7;
 
         if (x + 1 < N)
-            ret |= bbs[x + 1] << len >> (y - 1) & 7;
+            ret |= bbs[x + 1] << len >> p & 7;
 
         return !ret;
+    }
+    int check33(int xx, int yy) //a density-biased evaluate func
+    {                           //implements like XO chess
+        int ret = 0;
+        for (int dir = 0; dir < 8; ++dir)
+        {
+            int x = xx + dx[dir];
+            int y = yy + dy[dir];
+            if (!inboard(x, y))
+            {
+                ret--;
+                continue;
+            }
+            int nxt = getpos(x, y);
+            if (nxt != -1)
+                ret += (nxt ^ ai_side) * 2 + 1;
+        }
+        return ret;
     }
 };
 
@@ -224,33 +244,16 @@ private:
         for (int i = 0; i < N; ++i)
             for (int j = 0; j < N; ++j)
             {
-                int col = box.getpos(i, j);
-                if (col != -1)
+                if (box.getpos(i, j) != -1)
                     continue;
-
-                int sum = 0;
-                for (int dir = 0; dir < 8; ++dir)
-                {
-                    int x = i + dx[dir];
-                    int y = j + dy[dir];
-                    if (!inboard(i, j))
-                    {
-                        sum--;
-                        continue;
-                    }
-                    int nxt = box.getpos(i, j);
-                    if (nxt == -1)
-                        continue;
-                    sum += (nxt ^ ai_side) * 3 + 1;
-                }
+                int val = box.check33(i, j);
 
                 //debug
                 // fout << sum << '\n';
 
-                if (sum > mxval ||
-                    (sum == mxval && hamilton(i, j) < hamilton(pos.first, pos.second)))
+                if (val > mxval)
                 {
-                    mxval = sum;
+                    mxval = val;
                     pos = Pos(i, j);
                 }
             }
@@ -291,7 +294,7 @@ private:
 
                 int val = -mmdfs(side ^ 1, -beta, -alpha, dep + 1, pos);
                 if (val > mxval ||
-                    (val == mxval && hamilton(i, j) < hamilton(ret.first, ret.second)))
+                    (val == mxval && box.check33(i, j) > box.check33(ret.first, ret.second)))
                 {
                     mxval = val, ret = Pos(i, j);
                     if (dep == 1)
@@ -315,17 +318,17 @@ private:
 
     Pos checkswap()
     {
-        // fout << "swapcheck" << std::endl;
-        // double _t = std::clock();
-        // Pos ret, pos, npos; //not sawp pos
-        // int val, nval;
-        // nval = mmdfs(ai_side, -INF, INF, 1, npos);
-        // val = mmdfs(ai_side ^ 1, -INF, INF, 1, pos);
-        // if (val< nval)
-
-        //  puton(ret.first, ret.second, ai_side);
-        // fout << "dfscnt:" << dfscnt << '\n';
-        // fout << "time:" << (std::clock() - _t) / CLOCKS_PER_SEC << '\n';
+        fout << "swapcheck" << std::endl;
+        double _t = std::clock();
+        Pos ret;
+        int val, nval; //not sawp val
+        val = mmdfs(ai_side ^ 1, -INF, INF, 1, ret);
+        nval = mmdfs(ai_side, -INF, INF, 1, ret);
+        if (val < nval)
+            ret = Pos(-1, -1);
+        fout << "dfscnt:" << dfscnt << '\n';
+        fout << "time:" << (std::clock() - _t) / CLOCKS_PER_SEC << '\n';
+        return ret;
     }
 
     void IDAstar();
@@ -348,12 +351,18 @@ public:
         // if (random_Int(0, 2))
         //     max_dep = 3;
         double _t = std::clock();
+        if (ai_side == 1 && turn == 2)
+        {
+            ret = checkswap();
+        }
+        else
+            mmdfs(ai_side, -INF, INF, 1, ret);
 
-        mmdfs(ai_side, -INF, INF, 1, ret);
-
-        puton(ret.first, ret.second, ai_side);
+        if (ret.first != -1)
+            puton(ret.first, ret.second, ai_side);
         fout << "dfscnt:" << dfscnt << '\n';
         fout << "time:" << (std::clock() - _t) / CLOCKS_PER_SEC << '\n';
+        fout << std::endl;
         return ret;
     }
 
