@@ -3,6 +3,7 @@
 #include <random>
 #include <ctime>
 #include <cassert>
+#include <algorithm>
 #include <cstring>
 #include <fstream>
 using namespace std;
@@ -377,31 +378,18 @@ int mmdfs(int side, int alpha, int beta, int dep, Pos &pos) //min-max
         return box.getvalue(ai_side);
     }
 
-    // std::vector<std::pair<Pos, int>> w;
+    std::vector<std::pair<Pos, int>> w;
     Pos ret;
     int mxval = -INF;
     for (int i = 0; i < N; ++i)
         for (int j = 0; j < N; ++j)
         {
-            // if (i == 2 && j == 0 && side == 0)
-            // {
-            //     putchar('\n');
-            // }
-
             if (box.getpos(i, j) != -1)
                 continue;
-
-            assert(box.rempty33(i, j) == box.empty33(i, j));
-            // if (box.rempty33(i, j) != box.empty33(i, j))
-            // {
-            //     box.print();
-            //     cout << box.rempty33(i, j) << endl;
-            //     cout << box.empty33(i, j) << endl;
-            // }
-
+            // assert(box.rempty33(i, j) == box.empty33(i, j));
             if (box.empty33(i, j))
                 continue;
-
+            int pre = box.getvalue(side);
             if (box.puton(i, j, side))
             {
                 if (dep == 1)
@@ -411,44 +399,38 @@ int mmdfs(int side, int alpha, int beta, int dep, Pos &pos) //min-max
                 //win with least steps
                 //while lose with most steps
             }
-            //debug calc value
-            // {
-            //     int val = box.getvalue(side);
-            //     box.calc();
-            //     int rval = box.getvalue(side);
-            //     if (val != rval)
-            //     {
-            //         putchar('\n');
-            //     }
-            // }
+            w.push_back(std::pair<Pos, int>(Pos(i, j), abs(box.getvalue(side) - pre)));
+            box.putback(i, j);
+        }
+    std::sort(w.begin(), w.end(),
+              [](const std::pair<Pos, int> &a,
+                 const std::pair<Pos, int> &b) { return a.second > b.second; });
 
-            int val = -mmdfs(side ^ 1, -beta, -alpha, dep + 1, pos);
-            if (val > mxval ||
-                (val == mxval && box.check33(i, j) > box.check33(ret.first, ret.second)))
+    for (const auto &x : w)
+    {
+        box.puton(x.first.first, x.first.second, side);
+        int val = -mmdfs(side ^ 1, -beta, -alpha, dep + 1, pos);
+        if (val > mxval ||
+            (val == mxval && box.check33(x.first.first, x.first.second) > box.check33(ret.first, ret.second)))
+        {
+            mxval = val, ret = x.first;
+            if (dep == 1)
             {
-                mxval = val, ret = Pos(i, j);
-                if (dep == 1)
-                {
-                    pos = ret;
-                    printpos(pos);
-                    cout << mxval << endl;
-                    putchar('\n');
-                }
-
-                // fout << val << " pos:" << ret.first << " " << ret.second << '\n';
+                pos = ret;
+                printpos(pos);
+                cout << mxval << endl;
+                putchar('\n');
             }
 
-            // w.push_back(std::pair<Pos, int>(Pos(i, j), -val));
-            box.putback(i, j);
-
-            alpha = std::max(alpha, mxval);
-            if (mxval > beta)
-                return mxval;
+            // fout << val << " pos:" << ret.first << " " << ret.second << '\n';
         }
-    // std::sort(w.begin(), w.end(),
-    //           [](const std::pair<Pos, int> &a,
-    //              const std::pair<Pos, int> &b) { return a.second > b.second; });
 
+        box.putback(x.first.first, x.first.second);
+
+        alpha = std::max(alpha, mxval);
+        if (mxval > beta)
+            return mxval;
+    }
     return mxval;
 }
 
