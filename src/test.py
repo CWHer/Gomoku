@@ -6,11 +6,15 @@ import sys
 import os
 
 
-def win(id):
+def win(id, ai0, ai1):
     if id == 2:
         sys.stdout.write('draw\n')
+    elif id == 0:
+        sys.stdout.write('ai0: ' + ai0.name + ' wins!\n')
     else:
-        sys.stdout.write('ai' + str(id) + ' wins!\n')
+        sys.stdout.write('ai1: ' + ai1.name + ' wins!\n')
+    # else:
+    # sys.stdout.write('ai' + str(id) + ' wins!\n')
     os.system("run.bat")
     sys.exit(0)
 
@@ -111,12 +115,12 @@ def try_init(ai0, ai1):
         ai0.init()
     except:
         sys.stderr.write('Time out: ai0 timeout in init function\n')
-        win(1)
+        win(1, ai0, ai1)
     try:
         ai1.init()
     except:
         sys.stderr.write('Time out: ai1 timeout in init function\n')
-        win(0)
+        win(1, ai0, ai1)
 
 
 def judge():
@@ -142,11 +146,11 @@ def judge():
         board.action(0, turn, a, b)
         board.show()
         if ret == -1:
-            win(1)
+            win(1, ai0, ai1)
         elif ret == 1:
-            win(0)
+            win(0, ai0, ai1)
         elif board.full():
-            win(2)
+            win(2, ai0, ai1)
         a, b = ai1.action(a, b)
         if turn == 2 and a == -1 and b == -1:
             sys.stderr.write('ai1 flips the board\n')
@@ -157,13 +161,12 @@ def judge():
         board.action(1, turn, a, b)
         if ret == -1:
             board.show()
-            win(0)
+            win(0, ai0, ai1)
         elif ret == 1:
             board.show()
-            win(1)
+            win(1, ai0, ai1)
         elif board.full():
-            win(2)
-    win(2)
+            win(2, ai0, ai1)
     # time.sleep(500)
     # os.system("taskkill /f /im sample.exe")
     # os.system("./run.bat")

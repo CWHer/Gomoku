@@ -396,6 +396,8 @@ private:
         std::sort(w.begin(), w.end(),
                   [](const std::pair<Pos, int> &a,
                      const std::pair<Pos, int> &b) { return a.second > b.second; });
+        if (w.empty())
+            return box.getvalue(side);
         for (const auto &x : w)
         {
             box.puton(x.first.first, x.first.second, side);
@@ -439,7 +441,7 @@ private:
         fout << "time:" << (std::clock() - _t) / CLOCKS_PER_SEC << '\n';
 
         //debug
-        ret = Pos(-1, -1);
+        // ret = Pos(-1, -1);
 
         return ret;
     }
@@ -462,13 +464,14 @@ public:
         dfscnt = 0;
 
         // fout << random_Int(0, 2) << '\n';
-        max_dep = 5;
+        max_dep = 7;
         // if (random_Int(0, 2))
         //     max_dep = 3;
         double _t = std::clock();
         if (ai_side == 1 && turn == 2)
         {
-            ret = checkswap();
+            // ret = checkswap();
+            ret = Pos(-1, -1);
         }
         else
             mmdfs(ai_side, -INF, INF, 1, ret);

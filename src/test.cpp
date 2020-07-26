@@ -405,7 +405,9 @@ int mmdfs(int side, int alpha, int beta, int dep, Pos &pos) //min-max
     std::sort(w.begin(), w.end(),
               [](const std::pair<Pos, int> &a,
                  const std::pair<Pos, int> &b) { return a.second > b.second; });
-
+    
+    if (w.empty())
+        return box.getvalue(side);
     for (const auto &x : w)
     {
         box.puton(x.first.first, x.first.second, side);
@@ -460,7 +462,7 @@ int main()
     box.print();
     std::cout << box.getvalue(ai_side) << std::endl;
     Pos pos;
-    max_dep = 5;
+    max_dep = 7;
     mmdfs(ai_side, -INF, INF, 1, pos);
     printpos(pos);
 
