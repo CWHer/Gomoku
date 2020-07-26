@@ -136,10 +136,57 @@ public:
         hashvalue ^= seed[x][y] * (unsigned)(col + 2);
         bbs[x] ^= 1 << y;
         for (int dir = 0; dir < 4; ++dir)
-            if (trace(x, y, dir, col).first +
-                    trace(x, y, opd(dir), col).first >=
-                4)
+        {
+            std::pair<int, bool> ls[2], rs[2];
+            for (int k = 0; k < 2; ++k)
+            {
+                ls[k] = trace(x, y, dir, k);
+                rs[k] = trace(x, y, opd(dir), k);
+            }
+            // 5 in a row!
+            if (ls[col].first + rs[col].first >= 4)
                 return 1;
+            // stop
+            if (ls[col ^ 1].first)
+            {
+                int len = ls[col ^ 1].first - 1;
+                if (ls[col ^ 1].second)
+                    score[col ^ 1] -= values[len] / 100;
+                else
+                    score[col ^ 1] += values[len] / 100 - values[len];
+            }
+            if (rs[col ^ 1].first)
+            {
+                int len = rs[col ^ 1].first - 1;
+                if (rs[col ^ 1].second)
+                    score[col ^ 1] -= values[len] / 100;
+                else
+                    score[col ^ 1] += values[len] / 100 - values[len];
+            }
+            // join
+            if (ls[col].first)
+            {
+                int len = ls[col].first - 1;
+                if (ls[col].second)
+                    score[col] -= values[len] / 100;
+                else
+                    score[col] -= values[len];
+            }
+            if (rs[col].first)
+            {
+                int len = rs[col].first - 1;
+                if (rs[col].second)
+                    score[col] -= values[len] / 100;
+                else
+                    score[col] -= values[len];
+            }
+            if (ls[col].second && rs[col].second)
+                continue;
+            if (ls[col].second || rs[col].second)
+                score[col] += values[ls[col].first + rs[col].first] / 100;
+            else
+                score[col] += values[ls[col].first + rs[col].first];
+        }
         return 0;
     }
     void putback(int x, int y)
@@ -147,7 +194,60 @@ public:
         bbs[x] ^= 1 << y;
         hashvalue ^= seed[x][y] * (unsigned)(board[x][y] + 2);
         hashvalue ^= seed[x][y];
+        int col = board[x][y];
         board[x][y] = -1;
+        for (int dir = 0; dir < 4; ++dir)
+        {
+            std::pair<int, bool> ls[2], rs[2];
+            for (int k = 0; k < 2; ++k)
+            {
+                ls[k] = trace(x, y, dir, k);
+                rs[k] = trace(x, y, opd(dir), k);
+            }
+            // 5 in a row!
+            if (ls[col].first + rs[col].first >= 4)
+                return;
+            // stop
+            if (ls[col ^ 1].first)
+            {
+                int len = ls[col ^ 1].first - 1;
+                if (ls[col ^ 1].second)
+                    score[col ^ 1] += values[len] / 100;
+                else
+                    score[col ^ 1] -= values[len] / 100 - values[len];
+            }
+            if (rs[col ^ 1].first)
+            {
+                int len = rs[col ^ 1].first - 1;
+                if (rs[col ^ 1].second)
+                    score[col ^ 1] += values[len] / 100;
+                else
+                    score[col ^ 1] -= values[len] / 100 - values[len];
+            }
+            // join
+            if (ls[col].first)
+            {
+                int len = ls[col].first - 1;
+                if (ls[col].second)
+                    score[col] += values[len] / 100;
+                else
+                    score[col] += values[len];
+            }
+            if (rs[col].first)
+            {
+                int len = rs[col].first - 1;
+                if (rs[col].second)
+                    score[col] += values[len] / 100;
+                else
+                    score[col] += values[len];
+            }
+            if (ls[col].second && rs[col].second)
+                continue;
+            if (ls[col].second || rs[col].second)
+                score[col] -= values[ls[col].first + rs[col].first] / 100;
+            else
+                score[col] -= values[ls[col].first + rs[col].first];
+        }
     }
 
     unsigned hashresult()
@@ -157,7 +257,7 @@ public:
 
     int getvalue(int col)
     {
-        calc();
+        // calc();
         return score[col] - score[1 ^ col];
     }
 
@@ -276,8 +376,7 @@ private:
         for (int i = 0; i < N; ++i)
             for (int j = 0; j < N; ++j)
             {
-                int col = box.getpos(i, j);
-                if (col != -1)
+                if (box.getpos(i, j) != -1)
                     continue;
                 if (box.empty33(i, j))
                     continue;
@@ -298,7 +397,12 @@ private:
                 {
                     mxval = val, ret = Pos(i, j);
                     if (dep == 1)
+                    {
                         pos = ret;
+                        fout << "pos" << pos.first << "," << pos.second << '\n';
+                        fout << mxval << '\n';
+                    }
+
                     // fout << val << " pos:" << ret.first << " " << ret.second << '\n';
                 }
 
@@ -326,8 +430,14 @@ private:
         nval = mmdfs(ai_side, -INF, INF, 1, ret);
         if (val < nval)
             ret = Pos(-1, -1);
+        fout << "val:" << val << '\n';
+        fout << "nval:" << nval << '\n';
         fout << "dfscnt:" << dfscnt << '\n';
         fout << "time:" << (std::clock() - _t) / CLOCKS_PER_SEC << '\n';
+
+        //debug
+        ret = Pos(-1, -1);
+
         return ret;
     }
 
@@ -340,6 +450,8 @@ public:
     }
     Pos run()
     {
+        fout << "ai_side:" << ai_side << '\n';
+        fout << "cur val:" << box.getvalue(ai_side) << '\n';
         // return randput();
         if (turn == 1)
             return randput();
@@ -360,6 +472,9 @@ public:
 
         if (ret.first != -1)
             puton(ret.first, ret.second, ai_side);
+        else
+            ai_side ^= 1;
+
         fout << "dfscnt:" << dfscnt << '\n';
         fout << "time:" << (std::clock() - _t) / CLOCKS_PER_SEC << '\n';
         fout << std::endl;

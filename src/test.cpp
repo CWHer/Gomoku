@@ -2,6 +2,7 @@
 #include <iostream>
 #include <random>
 #include <ctime>
+#include <cassert>
 #include <cstring>
 #include <fstream>
 using namespace std;
@@ -21,7 +22,7 @@ inline bool inboard(int &x, int &y) //inside board
 {
     return x >= 0 && x < N && y >= 0 && y < N;
 }
-inline int opd(int &dir) //opposite dir
+inline int opd(int dir) //opposite dir
 {
     return (dir + 4) % 8;
 }
@@ -54,7 +55,7 @@ public:
     // {
 
     // }
-    inline std::pair<int, bool> trace(int x, int y, int dir, int col) //whether end is blocked
+    inline std::pair<int, bool> trace(int x, int y, int dir, int col)
     {
         int ret = 0;
         while (true)
@@ -101,7 +102,7 @@ public:
                         // }
                         // p.second = blocked = 0;
                         if (p.second || blocked)
-                            score[board[i][j]] += values[p.first] / 2;
+                            score[board[i][j]] += values[p.first] / 100;
                         else
                             score[board[i][j]] += values[p.first];
                     }
@@ -134,10 +135,57 @@ public:
         hashvalue ^= seed[x][y] * (unsigned)(col + 2);
         bbs[x] ^= 1 << y;
         for (int dir = 0; dir < 4; ++dir)
-            if (trace(x, y, dir, col).first +
-                    trace(x, y, opd(dir), col).first >=
-                4)
+        {
+            std::pair<int, bool> ls[2], rs[2];
+            for (int k = 0; k < 2; ++k)
+            {
+                ls[k] = trace(x, y, dir, k);
+                rs[k] = trace(x, y, opd(dir), k);
+            }
+            // 5 in a row!
+            if (ls[col].first + rs[col].first >= 4)
                 return 1;
+            // stop
+            if (ls[col ^ 1].first)
+            {
+                int len = ls[col ^ 1].first - 1;
+                if (ls[col ^ 1].second)
+                    score[col ^ 1] -= values[len] / 100;
+                else
+                    score[col ^ 1] += values[len] / 100 - values[len];
+            }
+            if (rs[col ^ 1].first)
+            {
+                int len = rs[col ^ 1].first - 1;
+                if (rs[col ^ 1].second)
+                    score[col ^ 1] -= values[len] / 100;
+                else
+                    score[col ^ 1] += values[len] / 100 - values[len];
+            }
+            // join
+            if (ls[col].first)
+            {
+                int len = ls[col].first - 1;
+                if (ls[col].second)
+                    score[col] -= values[len] / 100;
+                else
+                    score[col] -= values[len];
+            }
+            if (rs[col].first)
+            {
+                int len = rs[col].first - 1;
+                if (rs[col].second)
+                    score[col] -= values[len] / 100;
+                else
+                    score[col] -= values[len];
+            }
+            if (ls[col].second && rs[col].second)
+                continue;
+            if (ls[col].second || rs[col].second)
+                score[col] += values[ls[col].first + rs[col].first] / 100;
+            else
+                score[col] += values[ls[col].first + rs[col].first];
+        }
         return 0;
     }
     void putback(int x, int y)
@@ -145,7 +193,60 @@ public:
         bbs[x] ^= 1 << y;
         hashvalue ^= seed[x][y] * (unsigned)(board[x][y] + 2);
         hashvalue ^= seed[x][y];
+        int col = board[x][y];
         board[x][y] = -1;
+        for (int dir = 0; dir < 4; ++dir)
+        {
+            std::pair<int, bool> ls[2], rs[2];
+            for (int k = 0; k < 2; ++k)
+            {
+                ls[k] = trace(x, y, dir, k);
+                rs[k] = trace(x, y, opd(dir), k);
+            }
+            // 5 in a row!
+            if (ls[col].first + rs[col].first >= 4)
+                return;
+            // stop
+            if (ls[col ^ 1].first)
+            {
+                int len = ls[col ^ 1].first - 1;
+                if (ls[col ^ 1].second)
+                    score[col ^ 1] += values[len] / 100;
+                else
+                    score[col ^ 1] -= values[len] / 100 - values[len];
+            }
+            if (rs[col ^ 1].first)
+            {
+                int len = rs[col ^ 1].first - 1;
+                if (rs[col ^ 1].second)
+                    score[col ^ 1] += values[len] / 100;
+                else
+                    score[col ^ 1] -= values[len] / 100 - values[len];
+            }
+            // join
+            if (ls[col].first)
+            {
+                int len = ls[col].first - 1;
+                if (ls[col].second)
+                    score[col] += values[len] / 100;
+                else
+                    score[col] += values[len];
+            }
+            if (rs[col].first)
+            {
+                int len = rs[col].first - 1;
+                if (rs[col].second)
+                    score[col] += values[len] / 100;
+                else
+                    score[col] += values[len];
+            }
+            if (ls[col].second && rs[col].second)
+                continue;
+            if (ls[col].second || rs[col].second)
+                score[col] -= values[ls[col].first + rs[col].first] / 100;
+            else
+                score[col] -= values[ls[col].first + rs[col].first];
+        }
     }
     unsigned hashresult()
     {
@@ -153,7 +254,7 @@ public:
     }
     int getvalue(int col)
     {
-        calc();
+        // calc();
         return score[col] - score[1 ^ col];
     }
     int getpos(int x, int y)
@@ -169,7 +270,8 @@ public:
                 while (ch == '\n')
                     ch = getchar();
                 if (ch != '.')
-                    board[i][j] = ch - '0', bbs[i] ^= 1 << j;
+                    puton(i, j, ch - '0');
+                // board[i][j] = ch - '0', bbs[i] ^= 1 << j;
             }
     }
     // check empty in 5*5
@@ -286,18 +388,19 @@ int mmdfs(int side, int alpha, int beta, int dep, Pos &pos) //min-max
             //     putchar('\n');
             // }
 
-            int col = box.getpos(i, j);
-            if (col != -1)
-                continue;
-            if (box.empty33(i, j))
+            if (box.getpos(i, j) != -1)
                 continue;
 
+            assert(box.rempty33(i, j) == box.empty33(i, j));
             // if (box.rempty33(i, j) != box.empty33(i, j))
             // {
             //     box.print();
             //     cout << box.rempty33(i, j) << endl;
             //     cout << box.empty33(i, j) << endl;
             // }
+
+            if (box.empty33(i, j))
+                continue;
 
             if (box.puton(i, j, side))
             {
@@ -308,6 +411,16 @@ int mmdfs(int side, int alpha, int beta, int dep, Pos &pos) //min-max
                 //win with least steps
                 //while lose with most steps
             }
+            //debug calc value
+            // {
+            //     int val = box.getvalue(side);
+            //     box.calc();
+            //     int rval = box.getvalue(side);
+            //     if (val != rval)
+            //     {
+            //         putchar('\n');
+            //     }
+            // }
 
             int val = -mmdfs(side ^ 1, -beta, -alpha, dep + 1, pos);
             if (val > mxval ||
@@ -358,14 +471,14 @@ int main()
     double t = clock();
 
     freopen("in", "r", stdin);
-    ai_side = 1;
+    ai_side = 0;
     // box.board[0][0] = box.board[0][1] = 1;
     // box.board[3][0] = box.board[3][1] = box.board[3][2] = 0;
     box.read();
     box.print();
-    std::cout << box.getvalue(1) << std::endl;
+    std::cout << box.getvalue(ai_side) << std::endl;
     Pos pos;
-    max_dep = 3;
+    max_dep = 5;
     mmdfs(ai_side, -INF, INF, 1, pos);
     printpos(pos);
 
