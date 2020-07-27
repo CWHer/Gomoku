@@ -24,16 +24,19 @@ const int dx[] = {0, -1, -1, -1, 0, 1, 1, 1};
 const int dy[] = {-1, -1, 0, 1, 1, 1, 0, -1};
 const int values[] = {1, 10, (int)1e3, (int)1e6};
 // const int phi = 10;  //first
-// const int phi = 100;
+// const int phi = 100; //second
 int phi;
 
 class Box;
 class Mango;
 
 //debug begin
+const bool _islocal = 1;         //log file control
 std::ofstream fout("mango.out"); //log file
 void printpos(Pos pos)
 {
+    if (!_islocal)
+        return;
     fout << "pos:" << pos.first << ',' << pos.second << '\n';
 }
 //debug end
@@ -85,7 +88,7 @@ private:
         }
     }
     //evaluate all the board
-    void calc() //to be optimized: only calc newly added
+    void calc() // a deserted func, of no use in this version
     {
         score[0] = score[1] = 0;
         for (int i = 0; i < N; ++i)
@@ -395,8 +398,6 @@ private:
                         pos = Pos(i, j);
                     box.putback(i, j);
                     return INF / 2 - dep * 1e7;
-                    //win with least steps
-                    //while lose with most steps
                 }
                 w.push_back(std::pair<Pos, int>(Pos(i, j), abs(box.getvalue(side) - pre)));
                 if (side == ai_side && opt != 1)
@@ -429,8 +430,9 @@ private:
                 if (dep == 1)
                 {
                     pos = ret;
-                    fout << "pos" << pos.first << "," << pos.second << '\n';
-                    fout << mxval << '\n';
+                    printpos(pos);
+                    if (_islocal)
+                        fout << mxval << '\n';
                 }
             }
 
@@ -518,8 +520,9 @@ private:
                 if (dep == 1)
                 {
                     pos = ret;
-                    fout << "pos" << pos.first << "," << pos.second << '\n';
-                    fout << mxval << '\n';
+                    printpos(pos);
+                    if (_islocal)
+                        fout << mxval << '\n';
                 }
             }
 
@@ -534,7 +537,8 @@ private:
 
     bool checkswap()
     {
-        fout << "swapcheck" << std::endl;
+        if (_islocal)
+            fout << "swapcheck" << std::endl;
         std::vector<Pos> t(0);
         for (int i = 0; i < N; ++i)
             for (int j = 0; j < N; ++j)
@@ -549,14 +553,17 @@ private:
         Pos ret;
         //final strike
         M.clear(), dfscnt = 0;
-        fout << "final strike" << '\n';
+        if (_islocal)
+            fout << "final strike" << '\n';
         if (requiem(ai_side, -INF, INF, 1, 15, ret) > INF / 3)
             return ret;
-        fout << "no way" << '\n';
+        if (_islocal)
+            fout << "no way" << '\n';
         // check if can win quickly
         for (int max_dep = 3; max_dep <= 7; max_dep += 2)
         {
-            fout << "dep:" << max_dep << '\n';
+            if (_islocal)
+                fout << "dep:" << max_dep << '\n';
             M.clear();
             if (mmdfs(ai_side, -INF, INF, 1, max_dep, ret) > INF / 3)
                 return ret;
@@ -571,8 +578,12 @@ public:
     }
     Pos run()
     {
-        fout << "ai_side:" << ai_side << '\n';
-        fout << "cur val:" << box.getvalue(ai_side) << '\n';
+        if (_islocal)
+        {
+            fout << "ai_side:" << ai_side << '\n';
+            fout << "cur val:" << box.getvalue(ai_side) << '\n';
+        }
+
         // return randput();
         Pos ret;
         if (turn == 1 && ai_side == 0)
@@ -597,16 +608,21 @@ public:
             }
         ret = IDAstar();
         puton(ret.first, ret.second, ai_side);
+        if (_islocal)
+        {
+            fout << "dfscnt:" << dfscnt << '\n';
+            fout << "time:" << (std::clock() - _t) / CLOCKS_PER_SEC << '\n';
+            fout << std::endl;
+        }
 
-        fout << "dfscnt:" << dfscnt << '\n';
-        fout << "time:" << (std::clock() - _t) / CLOCKS_PER_SEC << '\n';
-        fout << std::endl;
         return ret;
     }
 
     //debug
     void print()
     {
+        if (!_islocal)
+            return;
         fout << "turn: " << turn << '\n';
         for (int i = 0; i < N; ++i)
         {
@@ -625,7 +641,8 @@ void init()
 {
     /* TODO: Replace this by your code */
     phi = ai_side ? 100 : 10;
-    fout << ai_side << std::endl;
+    if (_islocal)
+        fout << ai_side << std::endl;
 }
 
 // loc is the action of your opponent
@@ -634,25 +651,14 @@ void init()
 Mango ai;
 Pos action(Pos loc)
 {
-    /* TODO: Replace this by your code */
-    /* This is now a random strategy */
-    // ai.print();
-
     turn++;
     ai.print();
-    fout << loc.first << ' ' << loc.second << '\n';
+    if (_islocal)
+        fout << loc.first << ' ' << loc.second << '\n';
     if (loc.first != -1)
         ai.puton(loc.first, loc.second, ai_side ^ 1);
     if (loc.first == -1 && turn > 1)
         ai_side ^= 1;
     ai.print();
     return ai.run();
-    // if (turn == 2 && ai_side == 1)
-    // {
-    //     return std::make_pair(-1, -1);
-    // }
-    // else
-    // {
-    //     return ai.run();
-    // }
 }
