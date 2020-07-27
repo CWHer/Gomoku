@@ -5,6 +5,8 @@
 #include <cassert>
 #include <algorithm>
 #include <cstring>
+#include <unordered_map>
+#include <unordered_set>
 #include <fstream>
 using namespace std;
 
@@ -16,6 +18,8 @@ const int INF = 1 << 30;
 const int dx[] = {0, -1, -1, -1, 0, 1, 1, 1};
 const int dy[] = {-1, -1, 0, 1, 1, 1, 0, -1};
 const int values[] = {1, 10, (int)1e3, (int)1e6};
+// unordered_set<unsigned> S;
+unordered_map<unsigned, int> M;
 ofstream fout("test.out");
 
 //utility begin
@@ -405,13 +409,23 @@ int mmdfs(int side, int alpha, int beta, int dep, Pos &pos) //min-max
     std::sort(w.begin(), w.end(),
               [](const std::pair<Pos, int> &a,
                  const std::pair<Pos, int> &b) { return a.second > b.second; });
-    
     if (w.empty())
         return box.getvalue(side);
     for (const auto &x : w)
     {
         box.puton(x.first.first, x.first.second, side);
-        int val = -mmdfs(side ^ 1, -beta, -alpha, dep + 1, pos);
+        // S.insert(box.hashresult());
+        int val;
+        if (!M.count(box.hashresult()))
+        {
+            val = -mmdfs(side ^ 1, -beta, -alpha, dep + 1, pos);
+            M[box.hashresult()] = val;
+        }
+        else
+        {
+            val = M[box.hashresult()];
+        }
+
         if (val > mxval ||
             (val == mxval && box.check33(x.first.first, x.first.second) > box.check33(ret.first, ret.second)))
         {
@@ -462,7 +476,9 @@ int main()
     box.print();
     std::cout << box.getvalue(ai_side) << std::endl;
     Pos pos;
-    max_dep = 7;
+    max_dep = 9;
+    // S.clear();
+    M.clear();
     mmdfs(ai_side, -INF, INF, 1, pos);
     printpos(pos);
 

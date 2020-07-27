@@ -11,6 +11,7 @@
 #include <cmath>
 #include <ctime>
 #include <iomanip>
+#include <unordered_map>
 
 typedef std::pair<int, int> Pos;
 extern int ai_side; //0: black, 1: white
@@ -323,9 +324,9 @@ public:
 class Mango
 {
 private:
+    std::unordered_map<unsigned, int> M;
     Box box;
     int dfscnt;
-    int max_dep;
     int w[N][N];
 
     //prefer dense places
@@ -363,7 +364,7 @@ private:
         return pos;
     }
 
-    int mmdfs(int side, int alpha, int beta, int dep, Pos &pos) //min-max
+    int mmdfs(int side, int alpha, int beta, int dep, int max_dep, Pos &pos) //min-max
     {
         // if (dep == 5)
         dfscnt++;
@@ -401,7 +402,18 @@ private:
         for (const auto &x : w)
         {
             box.puton(x.first.first, x.first.second, side);
-            int val = -mmdfs(side ^ 1, -beta, -alpha, dep + 1, pos);
+
+            int val;
+            if (!M.count(box.hashresult()))
+            {
+                val = -mmdfs(side ^ 1, -beta, -alpha, dep + 1, max_dep, pos);
+                M[box.hashresult()] = val;
+            }
+            else
+            {
+                val = M[box.hashresult()];
+            }
+
             if (val > mxval ||
                 (val == mxval && box.check33(x.first.first, x.first.second) > box.check33(ret.first, ret.second)))
             {
@@ -412,8 +424,6 @@ private:
                     fout << "pos" << pos.first << "," << pos.second << '\n';
                     fout << mxval << '\n';
                 }
-
-                // fout << val << " pos:" << ret.first << " " << ret.second << '\n';
             }
 
             box.putback(x.first.first, x.first.second);
@@ -431,8 +441,9 @@ private:
         double _t = std::clock();
         Pos ret;
         int val, nval; //not sawp val
-        val = mmdfs(ai_side ^ 1, -INF, INF, 1, ret);
-        nval = mmdfs(ai_side, -INF, INF, 1, ret);
+        int max_dep = 7;
+        val = mmdfs(ai_side ^ 1, -INF, INF, 1, max_dep, ret);
+        nval = mmdfs(ai_side, -INF, INF, 1, max_dep, ret);
         if (val < nval)
             ret = Pos(-1, -1);
         fout << "val:" << val << '\n';
@@ -446,7 +457,18 @@ private:
         return ret;
     }
 
-    void IDAstar();
+    Pos IDAstar()
+    {
+        Pos ret;
+        // check if can win quickly
+        for (int max_dep = 3; max_dep <= 7; max_dep += 2)
+        {
+            M.clear();
+            if (mmdfs(ai_side, -INF, INF, 1, max_dep, ret) > INF / 3)
+                return ret;
+        }
+        return ret;
+    }
 
 public:
     void puton(int x, int y, int col)
@@ -464,7 +486,7 @@ public:
         dfscnt = 0;
 
         // fout << random_Int(0, 2) << '\n';
-        max_dep = 7;
+        int max_dep = 7;
         // if (random_Int(0, 2))
         //     max_dep = 3;
         double _t = std::clock();
@@ -474,7 +496,9 @@ public:
             ret = Pos(-1, -1);
         }
         else
-            mmdfs(ai_side, -INF, INF, 1, ret);
+            // M.clear();
+            // mmdfs(ai_side, -INF, INF, 1, max_dep, ret);
+            ret = IDAstar();
 
         if (ret.first != -1)
             puton(ret.first, ret.second, ai_side);
