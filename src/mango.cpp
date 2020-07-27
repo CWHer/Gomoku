@@ -447,7 +447,6 @@ private:
 
     int mmdfs(int side, int alpha, int beta, int dep, int max_dep, Pos &pos) //min-max
     {
-        // if (dep == 5)
         dfscnt++;
         if (dep == max_dep)
             return box.getvalue(ai_side);
