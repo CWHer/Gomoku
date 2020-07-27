@@ -23,6 +23,9 @@ const int INF = 1 << 30;
 const int dx[] = {0, -1, -1, -1, 0, 1, 1, 1};
 const int dy[] = {-1, -1, 0, 1, 1, 1, 0, -1};
 const int values[] = {1, 10, (int)1e3, (int)1e6};
+// const int phi = 10;  //first
+// const int phi = 100;
+int phi;
 
 class Box;
 class Mango;
@@ -51,9 +54,9 @@ inline int random_int(int min, int max)
     std::uniform_int_distribution<int> distribution(min, max);
     return distribution(generator);
 }
-inline int hamilton(int &x, int &y) //hamilton dist from (7,7) center
+inline int hamilton(int x1, int y1, int x2 = 7, int y2 = 7) //hamilton dist from (7,7) center
 {
-    return abs(x - 7) + abs(y - 7);
+    return abs(x1 - x2) + abs(y1 - y2);
 }
 //utility end
 
@@ -66,10 +69,6 @@ private:
     int board[N][N];
     int bbs[N];   //board bit set
     int score[2]; //black/white
-    // int calc()    //use after puton
-    // {
-
-    // }
     // longest continuous trace
     // plus whether end is blocked
     inline std::pair<int, bool> trace(int x, int y, int dir, int col)
@@ -108,7 +107,7 @@ private:
                         if (p.second && blocked)
                             continue;
                         if (p.second || blocked)
-                            score[board[i][j]] += values[p.first] / 100;
+                            score[board[i][j]] += values[p.first] / phi;
                         else
                             score[board[i][j]] += values[p.first];
                     }
@@ -129,13 +128,17 @@ public:
         std::memset(bbs, 0, sizeof(bbs));
         std::memset(score, 0, sizeof(score));
     }
-    //return 1 if 5 in a row
-    bool puton(int x, int y, int col)
+    //return 2 when five in a row
+    //1 when three in a row without being blocked
+    //1 when four in a row
+    //default: 0
+    int puton(int x, int y, int col)
     {
         board[x][y] = col;
         hashvalue ^= seed[x][y];
         hashvalue ^= seed[x][y] * (unsigned)(col + 2);
         bbs[x] ^= 1 << y;
+        int ret = 0;
         for (int dir = 0; dir < 4; ++dir)
         {
             std::pair<int, bool> ls[2], rs[2];
@@ -146,30 +149,30 @@ public:
             }
             // 5 in a row!
             if (ls[col].first + rs[col].first >= 4)
-                return 1;
+                return 2;
             // stop
             if (ls[col ^ 1].first)
             {
                 int len = ls[col ^ 1].first - 1;
                 if (ls[col ^ 1].second)
-                    score[col ^ 1] -= values[len] / 100;
+                    score[col ^ 1] -= values[len] / phi;
                 else
-                    score[col ^ 1] += values[len] / 100 - values[len];
+                    score[col ^ 1] += values[len] / phi - values[len];
             }
             if (rs[col ^ 1].first)
             {
                 int len = rs[col ^ 1].first - 1;
                 if (rs[col ^ 1].second)
-                    score[col ^ 1] -= values[len] / 100;
+                    score[col ^ 1] -= values[len] / phi;
                 else
-                    score[col ^ 1] += values[len] / 100 - values[len];
+                    score[col ^ 1] += values[len] / phi - values[len];
             }
             // join
             if (ls[col].first)
             {
                 int len = ls[col].first - 1;
                 if (ls[col].second)
-                    score[col] -= values[len] / 100;
+                    score[col] -= values[len] / phi;
                 else
                     score[col] -= values[len];
             }
@@ -177,18 +180,27 @@ public:
             {
                 int len = rs[col].first - 1;
                 if (rs[col].second)
-                    score[col] -= values[len] / 100;
+                    score[col] -= values[len] / phi;
                 else
                     score[col] -= values[len];
             }
             if (ls[col].second && rs[col].second)
                 continue;
             if (ls[col].second || rs[col].second)
-                score[col] += values[ls[col].first + rs[col].first] / 100;
+            {
+                score[col] += values[ls[col].first + rs[col].first] / phi;
+                if (ls[col].first + rs[col].first == 3)
+                    ret = 1;
+            }
+
             else
+            {
                 score[col] += values[ls[col].first + rs[col].first];
+                if (ls[col].first + rs[col].first >= 2)
+                    ret = 1;
+            }
         }
-        return 0;
+        return ret;
     }
     void putback(int x, int y)
     {
@@ -213,24 +225,24 @@ public:
             {
                 int len = ls[col ^ 1].first - 1;
                 if (ls[col ^ 1].second)
-                    score[col ^ 1] += values[len] / 100;
+                    score[col ^ 1] += values[len] / phi;
                 else
-                    score[col ^ 1] -= values[len] / 100 - values[len];
+                    score[col ^ 1] -= values[len] / phi - values[len];
             }
             if (rs[col ^ 1].first)
             {
                 int len = rs[col ^ 1].first - 1;
                 if (rs[col ^ 1].second)
-                    score[col ^ 1] += values[len] / 100;
+                    score[col ^ 1] += values[len] / phi;
                 else
-                    score[col ^ 1] -= values[len] / 100 - values[len];
+                    score[col ^ 1] -= values[len] / phi - values[len];
             }
             // join
             if (ls[col].first)
             {
                 int len = ls[col].first - 1;
                 if (ls[col].second)
-                    score[col] += values[len] / 100;
+                    score[col] += values[len] / phi;
                 else
                     score[col] += values[len];
             }
@@ -238,14 +250,14 @@ public:
             {
                 int len = rs[col].first - 1;
                 if (rs[col].second)
-                    score[col] += values[len] / 100;
+                    score[col] += values[len] / phi;
                 else
                     score[col] += values[len];
             }
             if (ls[col].second && rs[col].second)
                 continue;
             if (ls[col].second || rs[col].second)
-                score[col] -= values[ls[col].first + rs[col].first] / 100;
+                score[col] -= values[ls[col].first + rs[col].first] / phi;
             else
                 score[col] -= values[ls[col].first + rs[col].first];
         }
@@ -324,6 +336,7 @@ public:
 class Mango
 {
 private:
+    static const int swapdist = 6;
     std::unordered_map<unsigned, int> M;
     Box box;
     int dfscnt;
@@ -348,10 +361,6 @@ private:
                 if (box.getpos(i, j) != -1)
                     continue;
                 int val = box.check33(i, j);
-
-                //debug
-                // fout << sum << '\n';
-
                 if (val > mxval)
                 {
                     mxval = val;
@@ -363,14 +372,11 @@ private:
         print();
         return pos;
     }
-
-    int mmdfs(int side, int alpha, int beta, int dep, int max_dep, Pos &pos) //min-max
+    int requiem(int side, int alpha, int beta, int dep, int max_dep, Pos &pos) // final strike
     {
-        // if (dep == 5)
         dfscnt++;
         if (dep == max_dep)
             return box.getvalue(ai_side);
-
         std::vector<std::pair<Pos, int>> w;
         Pos ret;
         int mxval = -INF;
@@ -382,7 +388,8 @@ private:
                 if (box.empty33(i, j))
                     continue;
                 int pre = box.getvalue(side);
-                if (box.puton(i, j, side))
+                int opt = box.puton(i, j, side);
+                if (opt == 2)
                 {
                     if (dep == 1)
                         pos = Pos(i, j);
@@ -392,6 +399,8 @@ private:
                     //while lose with most steps
                 }
                 w.push_back(std::pair<Pos, int>(Pos(i, j), abs(box.getvalue(side) - pre)));
+                if (side == ai_side && opt != 1)
+                    w.pop_back();
                 box.putback(i, j);
             }
         std::sort(w.begin(), w.end(),
@@ -402,11 +411,10 @@ private:
         for (const auto &x : w)
         {
             box.puton(x.first.first, x.first.second, side);
-
             int val;
             if (!M.count(box.hashresult()))
             {
-                val = -mmdfs(side ^ 1, -beta, -alpha, dep + 1, max_dep, pos);
+                val = -requiem(side ^ 1, -beta, -alpha, dep + 1, max_dep, pos);
                 M[box.hashresult()] = val;
             }
             else
@@ -435,34 +443,120 @@ private:
         return mxval;
     }
 
-    Pos checkswap()
+    int mmdfs(int side, int alpha, int beta, int dep, int max_dep, Pos &pos) //min-max
+    {
+        // if (dep == 5)
+        dfscnt++;
+        if (dep == max_dep)
+            return box.getvalue(ai_side);
+
+        std::vector<std::pair<Pos, int>> w;
+        Pos ret;
+        int mxval = -INF;
+        for (int i = 0; i < N; ++i)
+            for (int j = 0; j < N; ++j)
+            {
+                if (box.getpos(i, j) != -1)
+                    continue;
+                if (box.empty33(i, j))
+                    continue;
+                int pre = box.getvalue(side);
+                if (box.puton(i, j, side) == 2)
+                {
+                    if (dep == 1)
+                        pos = Pos(i, j);
+                    box.putback(i, j);
+                    return INF / 2 - dep * 1e7;
+                    //win with least steps
+                    //while lose with most steps
+                }
+                w.push_back(std::pair<Pos, int>(Pos(i, j), abs(box.getvalue(side) - pre)));
+                box.putback(i, j);
+            }
+        //compromise method
+        std::sort(w.begin(), w.end(),
+                  [](const std::pair<Pos, int> &a,
+                     const std::pair<Pos, int> &b) { return a.second > b.second; });
+
+        //a good but slow method
+        // std::sort(w.begin(), w.end(),
+        //           [this](const std::pair<Pos, int> &a,
+        //                  const std::pair<Pos, int> &b) { return a.second == b.second
+        //                                                             ? box.check33(a.first.first, a.first.second) >
+        //                                                                   box.check33(b.first.first, b.first.second)
+        //                                                             : a.second > b.second; });
+
+        //a awful method
+        // std::sort(w.begin(), w.end(),
+        //           [](const std::pair<Pos, int> &a,
+        //              const std::pair<Pos, int> &b) { return a.second == b.second
+        //                                                         ? hamilton(a.first.first, a.first.second) <
+        //                                                               hamilton(b.first.first, b.first.second)
+        //                                                         : a.second > b.second; });
+        if (w.empty())
+            return box.getvalue(side);
+        for (const auto &x : w)
+        {
+            box.puton(x.first.first, x.first.second, side);
+
+            int val;
+            if (!M.count(box.hashresult()))
+            {
+                val = -mmdfs(side ^ 1, -beta, -alpha, dep + 1, max_dep, pos);
+                M[box.hashresult()] = val;
+            }
+            else
+            {
+                val = M[box.hashresult()];
+            }
+
+            if (val > mxval ||
+                (val == mxval && box.check33(x.first.first, x.first.second) > box.check33(ret.first, ret.second)))
+            // (val == mxval && hamilton(x.first.first, x.first.second) > hamilton(ret.first, ret.second)))
+            {
+                mxval = val, ret = x.first;
+                if (dep == 1)
+                {
+                    pos = ret;
+                    fout << "pos" << pos.first << "," << pos.second << '\n';
+                    fout << mxval << '\n';
+                }
+            }
+
+            box.putback(x.first.first, x.first.second);
+
+            alpha = std::max(alpha, mxval);
+            if (mxval > beta)
+                return mxval;
+        }
+        return mxval;
+    }
+
+    bool checkswap()
     {
         fout << "swapcheck" << std::endl;
-        double _t = std::clock();
-        Pos ret;
-        int val, nval; //not sawp val
-        int max_dep = 7;
-        val = mmdfs(ai_side ^ 1, -INF, INF, 1, max_dep, ret);
-        nval = mmdfs(ai_side, -INF, INF, 1, max_dep, ret);
-        if (val < nval)
-            ret = Pos(-1, -1);
-        fout << "val:" << val << '\n';
-        fout << "nval:" << nval << '\n';
-        fout << "dfscnt:" << dfscnt << '\n';
-        fout << "time:" << (std::clock() - _t) / CLOCKS_PER_SEC << '\n';
-
-        //debug
-        // ret = Pos(-1, -1);
-
-        return ret;
+        std::vector<Pos> t(0);
+        for (int i = 0; i < N; ++i)
+            for (int j = 0; j < N; ++j)
+                if (box.getpos(i, j) == (ai_side ^ 1))
+                    t.push_back(Pos(i, j));
+        return hamilton(t.front().first, t.front().second,
+                        t.back().first, t.back().second) < swapdist;
     }
 
     Pos IDAstar()
     {
         Pos ret;
+        //final strike
+        M.clear(), dfscnt = 0;
+        fout << "final strike" << '\n';
+        if (requiem(ai_side, -INF, INF, 1, 15, ret) > INF / 3)
+            return ret;
+        fout << "no way" << '\n';
         // check if can win quickly
         for (int max_dep = 3; max_dep <= 7; max_dep += 2)
         {
+            fout << "dep:" << max_dep << '\n';
             M.clear();
             if (mmdfs(ai_side, -INF, INF, 1, max_dep, ret) > INF / 3)
                 return ret;
@@ -480,30 +574,29 @@ public:
         fout << "ai_side:" << ai_side << '\n';
         fout << "cur val:" << box.getvalue(ai_side) << '\n';
         // return randput();
-        if (turn == 1)
-            return randput();
         Pos ret;
-        dfscnt = 0;
-
-        // fout << random_Int(0, 2) << '\n';
-        int max_dep = 7;
-        // if (random_Int(0, 2))
-        //     max_dep = 3;
+        if (turn == 1 && ai_side == 0)
+            return randput();
+        if (turn == 1 && ai_side == 1)
+        {
+            if (box.getpos(0, 0) != -1)
+                ret = Pos(0, N - 1);
+            else
+                ret = Pos(0, 0);
+            puton(ret.first, ret.second, ai_side);
+            return ret;
+        }
+        if (turn == 2 && ai_side == 0)
+            return randput();
         double _t = std::clock();
         if (ai_side == 1 && turn == 2)
-        {
-            // ret = checkswap();
-            ret = Pos(-1, -1);
-        }
-        else
-            // M.clear();
-            // mmdfs(ai_side, -INF, INF, 1, max_dep, ret);
-            ret = IDAstar();
-
-        if (ret.first != -1)
-            puton(ret.first, ret.second, ai_side);
-        else
-            ai_side ^= 1;
+            if (checkswap())
+            {
+                ai_side ^= 1;
+                return Pos(-1, -1);
+            }
+        ret = IDAstar();
+        puton(ret.first, ret.second, ai_side);
 
         fout << "dfscnt:" << dfscnt << '\n';
         fout << "time:" << (std::clock() - _t) / CLOCKS_PER_SEC << '\n';
@@ -531,9 +624,7 @@ public:
 void init()
 {
     /* TODO: Replace this by your code */
-    // srand((unsigned)time(0));
-    // memset(board, -1, sizeof(board));
-
+    phi = ai_side ? 100 : 10;
     fout << ai_side << std::endl;
 }
 
