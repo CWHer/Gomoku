@@ -1,0 +1,81 @@
+/* .wrapper {
+    text-align: center;
+    position: relative;
+} */
+
+.chessboard {
+    /* margin: 0px 0 0 0; */
+    width: 600px;
+    height: 600px;
+    display: flex;
+    background: url(images/chessboard.jpg) no-repeat;
+    background-size: 100% 100%;
+    overflow: hidden;
+    /* box-shadow: 2px 2px 8px #888;
+    -webkit-box-shadow: 2px 2px 8px #888;
+    -moz-box-shadow: 2px 2px 8px #888; */
+}
+
+div.chessboard div {
+    float: left;
+    width: 36px;
+    height: 36px;
+    border-top: 0px solid #ccc;
+    border-left: 0px solid #ccc;
+    border-right: 0;
+    border-bottom: 0;
+    cursor: pointer;
+}
+
+/* 棋子 */
+div.chessboard div.black {
+    background: url(static/images/black.png) no-repeat 4px 4px;
+}
+
+div.chessboard div.white {
+    background: url(static/images/white.png) no-repeat 4px 4px;
+}
+
+div.chessboard div.hover {
+    background: url(static/images/hover.png) no-repeat 1px 1px;
+}
+
+div.chessboard div.hover-up {
+    background: url(static/images/hover_up.png) no-repeat 1px 1px;
+}
+
+div.chessboard div.hover-down {
+    background: url(static/images/hover_down.png) no-repeat 1px 1px;
+}
+
+div.chessboard div.hover-up-left {
+    background: url(static/images/hover_up_left.png) no-repeat 1px 1px;
+}
+
+div.chessboard div.hover-up-right {
+    background: url(static/images/hover_up_right.png) no-repeat 1px 1px;
+}
+
+div.chessboard div.hover-left {
+    background: url(static/images/hover_left.png) no-repeat 1px 1px;
+}
+
+div.chessboard div.hover-right {
+    background: url(static/images/hover_right.png) no-repeat 1px 1px;
+}
+
+div.chessboard div.hover-down-left {
+    background: url(static/images/hover_down_left.png) no-repeat 1px 1px;
+}
+
+div.chessboard div.hover-down-right {
+    background: url(static/images/hover_down_right.png) no-repeat 1px 1px;
+}
+
+div.chessboard div.white-last {
+    background: url(static/images/white_last.png) no-repeat 4px 4px;
+}
+
+div.chessboard div.black-last {
+    background: url(static/images/black_last.png) no-repeat 4px 4px;
+}
