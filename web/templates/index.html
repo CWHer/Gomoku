@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link href="{{url_for('static',filename='images/planet.svg')}}" rel="shortcut icon">
+    <title>Gomoku</title>
+    <link rel="stylesheet" type="text/css" href="{{url_for('static',filename='index.css')}}">
+    <!-- 新 Bootstrap 核心 CSS 文件 -->
+    <link href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script>
+        // modify chessboard width
+        // do not use in debug
+        // $(window).resize(function () {
+        //     var len = $(window).width() / 12 * 5.5;
+        //     $(".chessboard").width(len);
+        //     $(".chessboard").height(len);
+        //     len = len /15;
+        //     $(".chessboard div").width(len);
+        //     $(".chessboard div").height(len);
+        // }) 
+
+        $(document).ready(function () {
+            // change player
+            $("#human1").click(function () {
+                $("#first-player").text("human");
+                $("#first-player").focus();
+            });
+            $("#ai1").click(function () {
+                $("#first-player").text("AI");
+                $("#first-player").focus();
+            });
+            $("#human2").click(function () {
+                $("#second-player").text("human");
+                $("#second-player").focus();
+            });
+            $("#ai2").click(function () {
+                $("#second-player").text("AI");
+                $("#second-player").focus();
+            });
+            $("#swap").attr("disabled", "true");
+            //gomoku start button
+            $("#start").click(function () {
+                gomoku.init();
+            })
+            // $("restart").click(function () {
+            //     gomoku.init();
+            // })
+        });
+    </script>
+    <script type="text/javascript" src="{{url_for('static',filename='gomoku.js')}}"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row clearfix">
+            <div class="col-md-12 column">
+                <div class="page-header">
+                    <h1>
+                        Gomoku <small> enjoy it!</small>
+                    </h1>
+                </div>
+                <!-- record -->
+                <div class="panel-group" id="panel-984633">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <a class="panel-title collapsed" data-toggle="collapse" data-parent="#panel-984633"
+                                href="#panel-element-229860">上一局记录</a>
+                        </div>
+                        <div id="panel-element-229860" class="panel-collapse collapse">
+                            <div class="panel-body">
+                                暂无对局...
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <!-- progress of AI -->
+                <div class="progress">
+                    <div class="progress-bar progress-success">
+                    </div>
+                </div>
+                <!-- alert -->
+                <div class="alert alert-success alert-dismissable">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                    <h4>
+                        注意!
+                    </h4>
+                    无禁手规则，但后手可在第二轮（即两黑一白时）选择是否换手。
+                    <a href="https://github.com/CWHer/Gomoku" class="alert-link">项目地址</a>
+                </div>
+                <div class="row clearfix" style="margin-bottom: 180px; margin-top: 40px;">
+                    <!-- empty -->
+                    <div class="col-md-2 column"></div>
+
+                    <!-- chessboard -->
+                    <div class="col-md-7 column">
+                        <div class="wrapper">
+                            <div class="chessboard">
+                                <!-- top line -->
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <!-- line 1 -->
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <!-- line 2 -->
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <!-- line 3 -->
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <!-- line 4 -->
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <!-- line 5 -->
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <!-- line 6 -->
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <!-- line 7 -->
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <!-- line 8 -->
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <!-- line 9 -->
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <!-- line 10 -->
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <!-- line 11 -->
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <!-- line 12 -->
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <!-- line 13 -->
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <!-- bottom line  -->
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                                <div class="chess"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 column" style="margin-top: 180px">
+                        <div class="row clearfix">
+                            <!-- first -->
+                            <div class="col-md-6 column">
+                                <p>
+                                    先手
+                                </p>
+                                <div class="btn-group">
+                                    <button class="btn btn-default" id="first-player">human</button> <button
+                                        data-toggle="dropdown" class="btn btn-default dropdown-toggle"><span
+                                            class="caret"></span></button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a id="human1" type="button">human</a>
+                                        </li>
+                                        <li>
+                                            <a id="ai1" type="button">AI</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <!-- second -->
+                            <div class="col-md-6 column">
+                                <p>
+                                    后手
+                                </p>
+                                <div class="btn-group">
+                                    <button class="btn btn-default" id="second-player">AI</button> <button
+                                        data-toggle="dropdown" class="btn btn-default dropdown-toggle"><span
+                                            class="caret"></span></button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a id="human2" type="button">human</a>
+                                        </li>
+                                        <li>
+                                            <a id="ai2" type="button">AI</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- control button -->
+                        <div style="margin-top: 40px;">
+                            <div class="row clearfix">
+                                <div class="col-md-12 column">
+                                    <div class="btn-group">
+                                        <button class="btn btn-default" type="button" id="start">
+                                            <em class="glyphicon glyphicon-play-circle"></em> 开始</button>
+                                        <button class="btn btn-default" type="button" id="restart">
+                                            <em class="	glyphicon glyphicon-repeat"></em> 重置</button>
+                                        <button class="btn btn-default" type="button" id="swap"><em
+                                                class="	glyphicon glyphicon-refresh"></em> 换手</button>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- nest -->
+    <script type="text/javascript" color="0,0,255" opacity='0.7' zIndex="-2" count="99"
+        src="{{url_for('static',filename='canvas-nest.js')}}"></script>
+</body>
+
+</html>
