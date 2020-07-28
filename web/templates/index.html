@@ -12,7 +12,7 @@
     <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
     <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script>
-        // modify chessboard width
+        // dynamic modify chessboard width
         // do not use in debug
         // $(window).resize(function () {
         //     var len = $(window).width() / 12 * 5.5;
@@ -24,6 +24,8 @@
         // }) 
 
         $(document).ready(function () {
+            //save origin board
+            gomoku.init();
             // change player
             $("#human1").click(function () {
                 $("#first-player").text("human");
@@ -42,13 +44,29 @@
                 $("#second-player").focus();
             });
             $("#swap").attr("disabled", "true");
+            $("#swap").click(function () {
+                gomoku.flip();
+                gomoku.isPlayer1 ^= 1;
+                gomoku.isPlayer2 ^= 1;
+                var t1 = gomoku.FirstisPlayer;
+                gomoku.FirstisPlayer = gomoku.SecondisPlayer;
+                gomoku.SecondisPlayer = t1;
+                var t2 = gomoku.blackLastChess;
+                gomoku.blackLastChess = gomoku.whiteLastChess;
+                gomoku.whiteLastChess = t2;
+                $("#swap").attr("disabled", "true");
+            })
             //gomoku start button
             $("#start").click(function () {
-                gomoku.init();
+                $("#swap").attr("disabled", "true");
+                gomoku.run();
+                $("#start").attr("disabled", "true");
             })
-            // $("restart").click(function () {
-            //     gomoku.init();
-            // })
+            $("#restart").click(function () {
+                gomoku.reset();
+                $("#swap").attr("disabled", "true");
+                $("#start").removeAttr("disabled");
+            })
         });
     </script>
     <script type="text/javascript" src="{{url_for('static',filename='gomoku.js')}}"></script>
@@ -89,7 +107,8 @@
                     <h4>
                         注意!
                     </h4>
-                    无禁手规则，但后手可在第二轮（即两黑一白时）选择是否换手。
+                    无禁手规则，但后手可在第二轮（即两黑一白时）选择是否换手。<br>
+                    选好玩家后，点击开始即可。<br>
                     <a href="https://github.com/CWHer/Gomoku" class="alert-link">项目地址</a>
                 </div>
                 <div class="row clearfix" style="margin-bottom: 180px; margin-top: 40px;">

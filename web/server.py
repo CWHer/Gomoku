@@ -8,4 +8,10 @@ def index():
     return render_template("index.html")
 
 
-app.run()
+@app.route('/')
+def init():
+    pass
+
+
+if __name__ == "__main__":
+    app.run()

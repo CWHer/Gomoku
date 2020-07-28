@@ -46,11 +46,21 @@
 }
 
 .chessboard .white-cur {
-    background: url(images/white-last.png) no-repeat;
+    background: url(images/white-cur.png) no-repeat;
     background-size: 100% 100%;
 }
 
 .chessboard .black-cur {
+    background: url(images/black-cur.png) no-repeat;
+    background-size: 100% 100%;
+}
+
+.chessboard .white-last {
+    background: url(images/white-last.png) no-repeat;
+    background-size: 100% 100%;
+}
+
+.chessboard .black-last {
     background: url(images/black-last.png) no-repeat;
     background-size: 100% 100%;
 }
