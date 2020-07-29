@@ -54,6 +54,7 @@ class AI:
     def kill(self):
         if not self.human:
             self.proc.kill()
+            self.proc.wait()
 
 
 class Board:

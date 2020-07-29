@@ -29,7 +29,8 @@ class Judge:
         self.isStart = True
         self.proc = subprocess.Popen(self.path,
                                      stdin=subprocess.PIPE,
-                                     stdout=subprocess.PIPE)
+                                     stdout=subprocess.PIPE,
+                                     start_new_session=True)
 
     # return [x,y,"opt"]
     # opt=-1 default
@@ -51,7 +52,10 @@ class Judge:
 
     def kill(self):
         if self.isStart:
-            self.proc.kill()
+            self.isStart = False
+            # linux
+            # os.killpg(proc.pid, signal.SIGTERM)
+            os.popen('taskkill  /t /f /pid ' + str(self.proc.pid))
 
 
 app = Flask(__name__)
