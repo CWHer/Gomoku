@@ -77,6 +77,22 @@
 - [x] Bootstrap
 - [x] jQuery(AJAX)
 
+##### feature
+
+- [x] 支持PVP/PVE/EVP/EVE
+
+- [x] 选中绿框
+
+- [x] 落子红框
+- [x] 五子蓝框
+- [ ] AI1+AI2
+- [ ] AI换手提示
+- [ ] win提示
+- [ ] AI进度条
+- [ ] 对局记录
+- [ ] 炫酷背景~~（）~~
+- [ ] 不卷了
+
 #### 服务端
 
 - [x] Flask
@@ -105,6 +121,8 @@ graph LR;
 > human: send [x,y] / return [x,y,result]
 >
 > AI: send "NEXT" /return [x,y,result]
+
+
 
 #### 参考资料
 
