@@ -24,7 +24,8 @@ var gomoku = {
     },
 
     reset: function () {
-        $("#swapalert").addClass("hide");
+        $(".alert-warning").addClass("hide");
+        $(".alert-success").addClass("hide");
         this.turn = this.wait = this.isSwap = 0;
         $(".chessboard").html(this.chessBoardHtml);
         this.isPlayer[0] = $("#first-player").text() == "human";
@@ -80,7 +81,14 @@ var gomoku = {
                 gomoku.putChess(i, j, col);
                 if (data["result"] != "-1") {
                     gomoku.isGameOver = 1;
+                    // draw
+                    // if (data["result"]==2)
+                    // do
                     gomoku.markWin(col);
+                    var txt = '<div class="alert alert-success alert-dismissible" disabled="true">';
+                    txt += '<button type="button" class="close" data-dismiss="alert">&times;</button>';
+                    txt += '<strong>玩家';
+                    $(".resultalert").append(txt + (data["result"] + 1) + '获胜!</strong></div>');
                 }
                 if (gomoku.isGameOver) return;
                 if (col == "black")
@@ -156,6 +164,10 @@ var gomoku = {
                         if (data["result"] != "-1") {
                             gomoku.isGameOver = 1;
                             gomoku.markWin(col);
+                            var txt = '<div class="alert alert-success alert-dismissible" disabled="true">';
+                            txt += '<button type="button" class="close" data-dismiss="alert">&times;</button>';
+                            txt += '<strong>玩家';
+                            $(".resultalert").append(txt + (data["result"] + 1) + '获胜!</strong></div>');
                         }
                         if (gomoku.isGameOver) return;
                         if (col == "black")
@@ -228,7 +240,10 @@ var gomoku = {
     },
     //flip board
     flip: function () {
-        $(".swapalert").append('<div class="alert alert-warning alert-dismissible" id="swapalert" disabled="true"><button type="button" class="close" data-dismiss="alert">&times;</button><strong>玩家2选择交换颜色! </strong></div>');
+        var txt = '<div class="alert alert-warning alert-dismissible" disabled="true">';
+        txt += '<button type="button" class="close" data-dismiss="alert">&times;</button>';
+        txt += '<strong>玩家2选择交换颜色! </strong></div>';
+        $(".swapalert").append(txt);
         this.isSwap = 1;
         var t1 = this.isPlayer[0];
         this.isPlayer[0] = this.isPlayer[1];

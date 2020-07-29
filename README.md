@@ -80,15 +80,15 @@
 ##### feature
 
 - [x] 支持PVP/PVE/EVP/EVE
-
 - [x] 选中绿框
-
 - [x] 落子红框
 - [x] 五子蓝框
 - [ ] AI1+AI2
+- [ ] kill进程树
 - [x] 换手提示
-- [ ] win提示
+- [x] result提示
 - [x] AI进度条
+- [ ] draw bug
 - [ ] 对局记录
 - [ ] 炫酷背景~~（）~~
 - [ ] 不卷了
