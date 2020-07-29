@@ -24,6 +24,7 @@ var gomoku = {
     },
 
     reset: function () {
+        $("#swapalert").addClass("hide");
         this.turn = this.wait = this.isSwap = 0;
         $(".chessboard").html(this.chessBoardHtml);
         this.isPlayer[0] = $("#first-player").text() == "human";
@@ -227,6 +228,7 @@ var gomoku = {
     },
     //flip board
     flip: function () {
+        $(".swapalert").append('<div class="alert alert-warning alert-dismissible" id="swapalert" disabled="true"><button type="button" class="close" data-dismiss="alert">&times;</button><strong>玩家2选择交换颜色! </strong></div>');
         this.isSwap = 1;
         var t1 = this.isPlayer[0];
         this.isPlayer[0] = this.isPlayer[1];
