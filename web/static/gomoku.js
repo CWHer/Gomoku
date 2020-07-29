@@ -40,6 +40,7 @@ var gomoku = {
     },
     //request AI action
     AIaction: function (col) {
+        $("#AIbar").css("width", "0%");
         $("#swap").attr("disabled", "true");
         if (col == "black" && !gomoku.isSwap) {
             this.turn++;
@@ -47,6 +48,7 @@ var gomoku = {
                 $("#swap").removeAttr("disabled");
         }
         gomoku.wait = 1; //lock
+        $("#AIbar").css("width", "30%");
         $.post("/action", {
                 "xaxis": -1,
                 "yaxis": 0
@@ -57,6 +59,7 @@ var gomoku = {
                     return;
                 }
                 gomoku.wait = 0; //delock
+                $("#AIbar").css("width", "80%");
                 data = $.parseJSON(data);
                 var i = data["xaxis"],
                     j = data["yaxis"];
@@ -65,6 +68,7 @@ var gomoku = {
                     gomoku.whiteLastChess = [i, j];
                 if (col == "black")
                     gomoku.blackLastChess = [i, j];
+                $("#AIbar").css("width", "100%");
                 if (i == -1) {
                     gomoku.flip();
                     if (!gomoku.isPlayer[1]) gomoku.AIaction("black");
