@@ -7,12 +7,8 @@ import os
 
 
 def win(id):
-    if id == 2:
-        sys.stdout.write('draw\n')
-    else:
-        # win
-        sys.stdout.write('win' + str(id) + '\n')
-    # os.system("run.bat")
+    # win 2 == draw
+    print('win ' + str(id))
     sys.exit(0)
 
 
@@ -48,23 +44,28 @@ class AI:
         if self.human == 1:
             value = sys.stdin.readline().strip().split(' ')
         else:
+            while input() != "NEXT":
+                pass
             self.send(str(a) + ' ' + str(b))
             value = self.receive().split(' ')
         return int(value[0]), int(value[1])
+
+    def kill(self):
+        self.proc.kill()
 
 
 class Board:
     def __init__(self):
         self.board = -np.ones((15, 15), dtype=int)
 
-    def show(self):
-        for i in range(15):
-            for j in range(15):
-                if self.board[i][j] == -1:
-                    sys.stdout.write('_ ')
-                else:
-                    sys.stdout.write(str(self.board[i][j]) + ' ')
-            sys.stdout.write('\n')
+    # def show(self):
+    #     for i in range(15):
+    #         for j in range(15):
+    #             if self.board[i][j] == -1:
+    #                 sys.stdout.write('_ ')
+    #             else:
+    #                 sys.stdout.write(str(self.board[i][j]) + ' ')
+    #         sys.stdout.write('\n')
 
     def action(self, side, turn, x, y):
         if turn == 2 and side == 1 and x == -1 and y == -1:
@@ -122,13 +123,6 @@ def try_init(ai0, ai1):
 
 def judge():
     board = Board()
-
-    # debug begin
-    # print(sys.argv[1])
-    # print(sys.argv[2])
-    # ai0, ai1 = AI("./baseline.exe", 0), AI("./mango.exe", 1)
-    # debug end
-
     ai0, ai1 = AI(sys.argv[1], 0), AI(sys.argv[2], 1)
     try_init(ai0, ai1)
     a, b = -1, -1
@@ -139,15 +133,21 @@ def judge():
         else:
             a, b = ai0.action(a, b)
         # ai0 take action
-        sys.stderr.write(str(a) + ' ' + str(b) + '\n')
+        print(str(a) + ' ' + str(b))
         ret = board.check_win(0, turn, a, b)
         board.action(0, turn, a, b)
         # board.show()
         if ret == -1:
+            ai0.kill()
+            ai1.kill()
             win(1)
         elif ret == 1:
+            ai0.kill()
+            ai1.kill()
             win(0)
         elif board.full():
+            ai0.kill()
+            ai1.kill()
             win(2)
         a, b = ai1.action(a, b)
         # if turn == 2 and a == -1 and b == -1:
@@ -155,26 +155,22 @@ def judge():
         # else:
         # ai1 take action
         # include(-1,-1)
-        sys.stderr.write(str(a) + ' ' + str(b) + '\n')
+        print(str(a) + ' ' + str(b))
         ret = board.check_win(1, turn, a, b)
         board.action(1, turn, a, b)
         if ret == -1:
-            # board.show()
+            ai0.kill()
+            ai1.kill()
             win(0)
         elif ret == 1:
-            # board.show()
+            ai0.kill()
+            ai1.kill()
             win(1)
         elif board.full():
+            ai0.kill()
+            ai1.kill()
             win(2)
-    win(2)
-    # time.sleep(500)
-    # os.system("taskkill /f /im sample.exe")
-    # os.system("./run.bat")
 
-
-# # debug begin
-# judge()
-# # debug end
 
 if __name__ == '__main__':
     if not len(sys.argv) == 3:

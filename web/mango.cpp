@@ -31,7 +31,7 @@ class Box;
 class Mango;
 
 //debug begin
-const bool _islocal = 1;         //log file control
+const bool _islocal = 0;         //log file control
 std::ofstream fout("mango.out"); //log file
 void printpos(Pos pos)
 {
