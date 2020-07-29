@@ -1,5 +1,4 @@
 import subprocess
-import timeout_decorator
 import time
 import numpy as np
 import sys
@@ -8,7 +7,7 @@ import os
 
 def win(id):
     # win 2 == draw
-    print('win ' + str(id))
+    print(' ' + str(id))
     sys.exit(0)
 
 
@@ -30,7 +29,6 @@ class AI:
     def receive(self):
         return self.proc.stdout.readline().strip().decode()
 
-    # @timeout_decorator.timeout(seconds=5, use_signals=True)
     def init(self):
         if self.human == 0:
             self.proc = subprocess.Popen(self.path,
@@ -39,10 +37,9 @@ class AI:
             self.send(self.id)
             self.name = self.receive()
 
-    # @timeout_decorator.timeout(seconds=5, use_signals=True)
     def action(self, a, b):
         if self.human == 1:
-            value = sys.stdin.readline().strip().split(' ')
+            value = input().strip().split(' ')
         else:
             while input() != "NEXT":
                 pass
@@ -51,7 +48,8 @@ class AI:
         return int(value[0]), int(value[1])
 
     def kill(self):
-        self.proc.kill()
+        if not self.human:
+            self.proc.kill()
 
 
 class Board:
@@ -133,7 +131,7 @@ def judge():
         else:
             a, b = ai0.action(a, b)
         # ai0 take action
-        print(str(a) + ' ' + str(b))
+        print(str(a) + ' ' + str(b), end="")
         ret = board.check_win(0, turn, a, b)
         board.action(0, turn, a, b)
         # board.show()
@@ -149,13 +147,14 @@ def judge():
             ai0.kill()
             ai1.kill()
             win(2)
+        print("")
         a, b = ai1.action(a, b)
         # if turn == 2 and a == -1 and b == -1:
         #     sys.stderr.write('flips\n')
         # else:
         # ai1 take action
         # include(-1,-1)
-        print(str(a) + ' ' + str(b))
+        print(str(a) + ' ' + str(b), end="")
         ret = board.check_win(1, turn, a, b)
         board.action(1, turn, a, b)
         if ret == -1:
@@ -170,6 +169,7 @@ def judge():
             ai0.kill()
             ai1.kill()
             win(2)
+        print("")
 
 
 if __name__ == '__main__':
