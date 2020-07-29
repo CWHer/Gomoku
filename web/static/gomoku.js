@@ -75,7 +75,7 @@ var gomoku = {
                 gomoku.putChess(i, j, col);
                 if (data["result"] != "-1") {
                     gomoku.isGameOver = 1;
-                    // gomoku.checkWin();
+                    gomoku.markWin(col);
                 }
                 if (gomoku.isGameOver) return;
                 if (col == "black")
@@ -150,7 +150,7 @@ var gomoku = {
                         gomoku.isPlayerTurn[1] ^= 1;
                         if (data["result"] != "-1") {
                             gomoku.isGameOver = 1;
-                            // gomoku.checkWin();
+                            gomoku.markWin(col);
                         }
                         if (gomoku.isGameOver) return;
                         if (col == "black")
@@ -209,8 +209,17 @@ var gomoku = {
     markChess: function (i, j, color) {
         $("div.chessboard div:eq(" + (i * 15 + j) + ")").removeClass(color).removeClass(color + "-cur").addClass(color + "-last");
     },
-    checkWin: function () {
-
+    markWin: function (col) {
+        $.post("/chessset",
+            function (data, status) {
+                if (status != "success") {
+                    alert("markwin failed");
+                    return;
+                }
+                data = $.parseJSON(data);
+                for (var i = 0; i < 5; ++i)
+                    gomoku.markChess(data["num" + (i * 2)], data["num" + (i * 2 + 1)], col);
+            });
     },
     //flip board
     flip: function () {

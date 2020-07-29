@@ -9,6 +9,7 @@ class Judge:
     # exe path
     path = ""
     isStart = False
+    chessset = []
 
     def setmode(self, player1, player2):
         self.path = "python judge.py"
@@ -48,8 +49,9 @@ class Judge:
         ret = self.receive().split()
         ret[0] = int(ret[0])
         ret[1] = int(ret[1])
-        if len(ret) == 3:
-            return ret
+        if len(ret) != 2:
+            self.chessset = ret[3:]
+            return ret[0:3]
         ret.append("-1")
         return ret
 
@@ -74,6 +76,18 @@ def kill():
     return ""
 
 
+@app.route('/chessset', methods=["POST"])
+def chessset():
+    pos = list(map(int, server.chessset))
+    server.kill()
+    ret = '{'
+    for i in range(len(pos)):
+        ret += '"num' + str(i) + '":' + str(pos[i])
+        if i != len(pos) - 1:
+            ret += ','
+    return ret + '}'
+
+
 @app.route('/init', methods=["POST"])
 def init():
     print(request.form)
@@ -91,8 +105,6 @@ def action():
     x = int(request.form.get("xaxis"))
     y = int(request.form.get("yaxis"))
     ret = server.action(x, y)
-    if ret[2] != '-1':
-        server.kill()
     return '{"xaxis":' + str(ret[0]) + ',' + '"yaxis":' + str(
         ret[1]) + ',' + '"result":' + ret[2] + '}'
 

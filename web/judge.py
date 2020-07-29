@@ -5,9 +5,13 @@ import sys
 import os
 
 
-def win(id):
+def win(id, chessset=None):
     # win 2 == draw
-    print(' ' + str(id))
+    print(' ' + str(id), end=" ")
+    if len(chessset) != 0:
+        for chess in chessset:
+            print(str(chess[0]) + ' ' + str(chess[1]) + ' ', end=" ")
+        print("")
     sys.exit(0)
 
 
@@ -76,9 +80,9 @@ class Board:
 
     def check_win(self, side, turn, x, y):
         if turn == 2 and side == 1 and x == -1 and y == -1:
-            return 0
+            return [0]
         if x < 0 or x >= 15 or y < 0 or y >= 15 or self.board[x][y] != -1:
-            return -1
+            return [-1]
 
         # 8 Directions
         dx = [1, 1, -1, -1, 0, 0, 1, -1]
@@ -89,6 +93,7 @@ class Board:
                 for i in range(8):
                     curx, cury = xx, yy
                     flg = True
+                    ret = []
                     for _ in range(5):
                         if curx < 0 or curx >= 15 or cury < 0 or cury >= 15:
                             flg = False
@@ -98,12 +103,14 @@ class Board:
                                                                or cury != y):
                             flg = False
                             break
+                        ret.append([curx, cury])
                         curx, cury = curx + dx[i], cury + dy[i]
                         # print(_, curx, cury, self.board[curx][cury], side)
                     if flg:
-                        return 1
+                        ret.insert(0, 1)
+                        return ret
 
-        return 0
+        return [0]
 
 
 def try_init(ai0, ai1):
@@ -135,14 +142,14 @@ def judge():
         ret = board.check_win(0, turn, a, b)
         board.action(0, turn, a, b)
         # board.show()
-        if ret == -1:
+        if ret[0] == -1:
             ai0.kill()
             ai1.kill()
             win(1)
-        elif ret == 1:
+        elif ret[0] == 1:
             ai0.kill()
             ai1.kill()
-            win(0)
+            win(0, ret[1:])
         elif board.full():
             ai0.kill()
             ai1.kill()
@@ -157,14 +164,14 @@ def judge():
         print(str(a) + ' ' + str(b), end="")
         ret = board.check_win(1, turn, a, b)
         board.action(1, turn, a, b)
-        if ret == -1:
+        if ret[0] == -1:
             ai0.kill()
             ai1.kill()
             win(0)
-        elif ret == 1:
+        elif ret[0] == 1:
             ai0.kill()
             ai1.kill()
-            win(1)
+            win(1, ret[1:])
         elif board.full():
             ai0.kill()
             ai1.kill()
