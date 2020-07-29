@@ -102,8 +102,8 @@ var gomoku = {
 
     main: function () {
         $.post("/init", {
-                "player1": this.isPlayer[0],
-                "player2": this.isPlayer[1]
+                "player1": $("#first-player").text(),
+                "player2": $("#second-player").text()
             },
             function (data, status) {
                 if (status != "success") {

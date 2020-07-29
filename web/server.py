@@ -12,15 +12,9 @@ class Judge:
     chessset = []
 
     def setmode(self, player1, player2):
-        self.path = "python judge.py"
-        if not player1:
-            self.path += " ./mango "
-        else:
-            self.path += " human "
-        if not player2:
-            self.path += " ./mango "
-        else:
-            self.path += " human "
+        self.path = "python judge.py "
+        player = {0: "human ", 1: "./mango ", 2: "./baseline "}
+        self.path += player[player1] + player[player2]
 
     def send(self, message):
         value = str(message) + '\n'
@@ -91,8 +85,9 @@ def chessset():
 @app.route('/init', methods=["POST"])
 def init():
     print(request.form)
-    player1 = request.form.get("player1") == "true"
-    player2 = request.form.get("player2") == "true"
+    switch = {"human": 0, "AI1": 1, "AI2": 2}
+    player1 = switch[request.form.get("player1")]
+    player2 = switch[request.form.get("player2")]
     print(player1, player2)
     server.setmode(player1, player2)
     server.init()

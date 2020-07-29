@@ -29,16 +29,24 @@
                 $("#first-player").text("human");
                 $("#first-player").focus();
             });
-            $("#ai1").click(function () {
-                $("#first-player").text("AI");
+            $("#ai11").click(function () {
+                $("#first-player").text("AI1");
+                $("#first-player").focus();
+            });
+            $("#ai12").click(function () {
+                $("#first-player").text("AI2");
                 $("#first-player").focus();
             });
             $("#human2").click(function () {
                 $("#second-player").text("human");
                 $("#second-player").focus();
             });
-            $("#ai2").click(function () {
-                $("#second-player").text("AI");
+            $("#ai21").click(function () {
+                $("#second-player").text("AI1");
+                $("#second-player").focus();
+            });
+            $("#ai22").click(function () {
+                $("#second-player").text("AI2");
                 $("#second-player").focus();
             });
             $("#swap").attr("disabled", "true");
@@ -113,6 +121,7 @@
                     <strong>说明! <br> </strong>
                     无禁手规则，但后手可在第二轮（即两黑一白时）选择是否换手。<br>
                     选好玩家后，点击开始即可。<br>
+                    <strong>AI1是mango，AI2是baseline <br> </strong>
                     <a href="https://github.com/CWHer/Gomoku" target="_blank" class="alert-link">项目地址</a>
                 </div>
                 <!-- swap alert -->
@@ -396,7 +405,10 @@
                                             <a id="human1" type="button">human</a>
                                         </li>
                                         <li>
-                                            <a id="ai1" type="button">AI</a>
+                                            <a id="ai11" type="button">AI1</a>
+                                        </li>
+                                        <li>
+                                            <a id="ai12" type="button">AI2</a>
                                         </li>
                                     </ul>
                                 </div>
@@ -407,7 +419,7 @@
                                     后手
                                 </p>
                                 <div class="btn-group">
-                                    <button class="btn btn-default" id="second-player">AI</button> <button
+                                    <button class="btn btn-default" id="second-player">AI1</button> <button
                                         data-toggle="dropdown" class="btn btn-default dropdown-toggle"><span
                                             class="caret"></span></button>
                                     <ul class="dropdown-menu">
@@ -415,7 +427,10 @@
                                             <a id="human2" type="button">human</a>
                                         </li>
                                         <li>
-                                            <a id="ai2" type="button">AI</a>
+                                            <a id="ai21" type="button">AI1</a>
+                                        </li>
+                                        <li>
+                                            <a id="ai22" type="button">AI2</a>
                                         </li>
                                     </ul>
                                 </div>
