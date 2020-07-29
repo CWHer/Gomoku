@@ -13,7 +13,7 @@
     <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script>
         // dynamic modify chessboard width
-        // do not use in debug
+        // do not use when debug
         // $(window).resize(function () {
         //     var len = $(window).width() / 12 * 5.5;
         //     $(".chessboard").width(len);
@@ -24,6 +24,7 @@
         // }) 
 
         $(document).ready(function () {
+            $.post("/kill");
             //save origin board
             gomoku.init();
             // change player
@@ -45,16 +46,22 @@
             });
             $("#swap").attr("disabled", "true");
             $("#swap").click(function () {
-                gomoku.flip();
-                gomoku.isPlayer1 ^= 1;
-                gomoku.isPlayer2 ^= 1;
-                var t1 = gomoku.FirstisPlayer;
-                gomoku.FirstisPlayer = gomoku.SecondisPlayer;
-                gomoku.SecondisPlayer = t1;
-                var t2 = gomoku.blackLastChess;
-                gomoku.blackLastChess = gomoku.whiteLastChess;
-                gomoku.whiteLastChess = t2;
+                //flip & swap
                 $("#swap").attr("disabled", "true");
+                gomoku.wait = 1;
+                $.post("/action", {
+                    "xaxis": -1,
+                    "yaxis": -1
+
+                }, function (data, status) {
+                    if (status != "success") {
+                        alert("flip failed");
+                        return;
+                    }
+                    gomoku.wait = 0;
+                    gomoku.flip();
+                    if (!gomoku.isPlayer[1]) gomoku.AIaction("black");
+                });
             })
             //gomoku start button
             $("#start").click(function () {
@@ -63,6 +70,7 @@
                 $("#start").attr("disabled", "true");
             })
             $("#restart").click(function () {
+                $.post("/kill");
                 gomoku.reset();
                 $("#swap").attr("disabled", "true");
                 $("#start").removeAttr("disabled");

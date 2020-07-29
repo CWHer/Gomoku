@@ -71,17 +71,40 @@
 
 #### 前端
 
-- [ ] HTML
-- [ ] CSS
-- [ ] JavaScript
-- [ ] Bootstrap
-- [ ] jQuery(AJAX)
+- [x] HTML
+- [x] CSS
+- [x] JavaScript
+- [x] Bootstrap
+- [x] jQuery(AJAX)
 
 #### 服务端
 
-- [ ] Flask
+- [x] Flask
 
+##### 流程
 
+```mermaid
+graph LR;
+	Web-->B(Server);
+	B(Server)-->E;
+	E{Judge}-->Player1;
+	Player1-->E;
+	E{Judge}-->Player2;
+	Player2-->E;
+	
+```
+
+###### Server
+
+> Web->Server: Post
+>
+> Server->Judge: action
+
+###### Judge
+
+> human: send [x,y] / return [x,y,result]
+>
+> AI: send "NEXT" /return [x,y,result]
 
 #### 参考资料
 
