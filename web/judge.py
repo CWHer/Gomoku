@@ -8,7 +8,7 @@ import os
 def win(id, chessset=None):
     # win 2 == draw
     print(' ' + str(id), end=" ")
-    if len(chessset) != 0:
+    if chessset != None:
         for chess in chessset:
             print(str(chess[0]) + ' ' + str(chess[1]) + ' ', end=" ")
         print("")

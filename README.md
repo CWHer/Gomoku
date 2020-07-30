@@ -88,15 +88,25 @@
 - [x] 换手提示
 - [x] result提示
 - [x] AI进度条
-- [ ] draw bug
+- [x] draw bug
 - [x] 对局记录
 - [ ] 炫酷背景~~（）~~
 - [ ] session
-- [ ] 不卷了
+- [ ] ~~简陋~~
 
 #### 服务端
 
 - [x] Flask
+
+##### 本地运行过程
+
+> `server.py`是服务端主要文件
+>
+> 同目录下需要包含
+>
+> - `templates folder`：网页
+> - `static folder`：图片/css/js
+> - 以及`judge.py`，`./baseline`，`./mango`
 
 ##### 流程
 

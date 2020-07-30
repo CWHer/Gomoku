@@ -86,17 +86,19 @@ var gomoku = {
                 if (data["result"] != "-1") {
                     gomoku.turncnt++;
                     gomoku.isGameOver = 1;
-                    // draw
-                    // if (data["result"]==2)
-                    // do
-                    gomoku.markWin(col);
+                    if (data["result"] != 2) gomoku.markWin(col);
+                    //append result
                     var txt = '<div class="alert alert-success alert-dismissible" disabled="true">';
                     txt += '<button type="button" class="close" data-dismiss="alert">&times;</button>';
-                    txt += '<strong>玩家';
-                    $(".resultalert").append(txt + (data["result"] + 1) + '</strong>获胜!</div>');
+                    txt += '<strong>';
+                    if (data["result"] != 2)
+                        $(".resultalert").append(txt + '玩家' + (data["result"] + 1) + '</strong>获胜!</div>');
+                    else
+                        $(".resultalert").append(txt + '平局</strong></div>');
+                    //flush
                     if (gomoku.turncnt % 5 == 1)
                         $("#record").empty();
-
+                    //append record
                     if (!gomoku.isPlayer[0] && !gomoku.isPlayer[1])
                         txt = '<div class="panel panel-success">';
                     else
@@ -105,7 +107,10 @@ var gomoku = {
                     txt += gomoku.turncnt + '">对局记录</a> </h4></div><div id="collapse' + gomoku.turncnt + '" class="panel-collapse collapse"><div class="panel-body"><ul class="breadcrumb">'
                     txt += '<li class="active"><strong>' + $("#first-player").text() + "</strong>对战<strong>" + $("#second-player").text() + '</strong></li>';
                     txt += '<li class="active">回合数:<strong>' + gomoku.turn + '</strong></li>';
-                    txt += '<li class="active"><strong>玩家' + (data["result"] + 1) + '</strong>获胜!</li>';
+                    if (data["result"] != 2)
+                        txt += '<li class="active"><strong>玩家' + (data["result"] + 1) + '</strong>获胜!</li>';
+                    else
+                        txt += '<li class="active"><strong>平局</strong></li>';
                     txt += '</ul></div></div></div>';
                     $("#record").append(txt);
                 }
@@ -183,19 +188,27 @@ var gomoku = {
                         if (data["result"] != "-1") {
                             gomoku.turncnt++;
                             gomoku.isGameOver = 1;
-                            gomoku.markWin(col);
+                            if (data["result"] != 2) gomoku.markWin(col);
+                            //append result
                             var txt = '<div class="alert alert-success alert-dismissible" disabled="true">';
                             txt += '<button type="button" class="close" data-dismiss="alert">&times;</button>';
-                            txt += '<strong>玩家';
-                            $(".resultalert").append(txt + (data["result"] + 1) + '</strong>获胜!</div>');
+                            txt += '<strong>';
+                            if (data["result"] != 2)
+                                $(".resultalert").append(txt + '玩家' + (data["result"] + 1) + '</strong>获胜!</div>');
+                            else
+                                $(".resultalert").append(txt + '平局</strong></div>');
+                            //flush
                             if (gomoku.turncnt % 5 == 1)
                                 $("#record").empty();
-
+                            //append record
                             txt = '<div class="panel panel-success"> <div class="panel-heading"><h4 class="panel-title"> <a data-toggle="collapse" data-parent="#record" href="#collapse';
                             txt += gomoku.turncnt + '">对局记录</a> </h4></div><div id="collapse' + gomoku.turncnt + '" class="panel-collapse collapse"><div class="panel-body"><ul class="breadcrumb">'
                             txt += '<li class="active"><strong>' + $("#first-player").text() + "</strong>对战<strong>" + $("#second-player").text() + '</strong></li>';
                             txt += '<li class="active">回合数:<strong>' + gomoku.turn + '</strong></li>';
-                            txt += '<li class="active"><strong>玩家' + (data["result"] + 1) + '</strong>获胜!</li>';
+                            if (data["result"] != 2)
+                                txt += '<li class="active"><strong>玩家' + (data["result"] + 1) + '</strong>获胜!</li>';
+                            else
+                                txt += '<li class="active"><strong>平局</strong></li>';
                             txt += '</ul></div></div></div>';
                             $("#record").append(txt);
                         }

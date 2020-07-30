@@ -45,7 +45,8 @@ class Judge:
         ret[0] = int(ret[0])
         ret[1] = int(ret[1])
         if len(ret) != 2:
-            self.chessset = ret[3:]
+            if ret[2] != 2:
+                self.chessset = ret[3:]
             return ret[0:3]
         ret.append("-1")
         return ret
