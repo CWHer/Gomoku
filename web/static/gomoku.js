@@ -1,4 +1,5 @@
 var gomoku = {
+    turncnt: 0,
     turn: 0,
     isSwap: 0,
     wait: 0,
@@ -15,6 +16,7 @@ var gomoku = {
     isGameOver: false,
 
     init: function () {
+        this.turncnt = 0
         this.chessBoardHtml = $(".chessboard").html();
     },
 
@@ -49,6 +51,8 @@ var gomoku = {
             if (gomoku.turn == 2)
                 $("#swap").removeAttr("disabled");
         }
+        if (col == "white" && gomoku.isSwap)
+            this.turn++;
         gomoku.wait = 1; //lock
         $("#AIbar").css("width", "30%");
         $.post("/action", {
@@ -80,6 +84,7 @@ var gomoku = {
                 gomoku.isPlayerTurn[1] ^= 1;
                 gomoku.putChess(i, j, col);
                 if (data["result"] != "-1") {
+                    gomoku.turncnt++;
                     gomoku.isGameOver = 1;
                     // draw
                     // if (data["result"]==2)
@@ -88,7 +93,21 @@ var gomoku = {
                     var txt = '<div class="alert alert-success alert-dismissible" disabled="true">';
                     txt += '<button type="button" class="close" data-dismiss="alert">&times;</button>';
                     txt += '<strong>玩家';
-                    $(".resultalert").append(txt + (data["result"] + 1) + '获胜!</strong></div>');
+                    $(".resultalert").append(txt + (data["result"] + 1) + '</strong>获胜!</div>');
+                    if (gomoku.turncnt % 5 == 1)
+                        $("#record").empty();
+
+                    if (!gomoku.isPlayer[0] && !gomoku.isPlayer[1])
+                        txt = '<div class="panel panel-success">';
+                    else
+                        txt = '<div class="panel panel-danger">';
+                    txt += '<div class="panel-heading"><h4 class="panel-title"> <a data-toggle="collapse" data-parent="#record" href="#collapse';
+                    txt += gomoku.turncnt + '">对局记录</a> </h4></div><div id="collapse' + gomoku.turncnt + '" class="panel-collapse collapse"><div class="panel-body"><ul class="breadcrumb">'
+                    txt += '<li class="active"><strong>' + $("#first-player").text() + "</strong>对战<strong>" + $("#second-player").text() + '</strong></li>';
+                    txt += '<li class="active">回合数:<strong>' + gomoku.turn + '</strong></li>';
+                    txt += '<li class="active"><strong>玩家' + (data["result"] + 1) + '</strong>获胜!</li>';
+                    txt += '</ul></div></div></div>';
+                    $("#record").append(txt);
                 }
                 if (gomoku.isGameOver) return;
                 if (col == "black")
@@ -162,12 +181,23 @@ var gomoku = {
                         gomoku.isPlayerTurn[0] ^= 1;
                         gomoku.isPlayerTurn[1] ^= 1;
                         if (data["result"] != "-1") {
+                            gomoku.turncnt++;
                             gomoku.isGameOver = 1;
                             gomoku.markWin(col);
                             var txt = '<div class="alert alert-success alert-dismissible" disabled="true">';
                             txt += '<button type="button" class="close" data-dismiss="alert">&times;</button>';
                             txt += '<strong>玩家';
-                            $(".resultalert").append(txt + (data["result"] + 1) + '获胜!</strong></div>');
+                            $(".resultalert").append(txt + (data["result"] + 1) + '</strong>获胜!</div>');
+                            if (gomoku.turncnt % 5 == 1)
+                                $("#record").empty();
+
+                            txt = '<div class="panel panel-success"> <div class="panel-heading"><h4 class="panel-title"> <a data-toggle="collapse" data-parent="#record" href="#collapse';
+                            txt += gomoku.turncnt + '">对局记录</a> </h4></div><div id="collapse' + gomoku.turncnt + '" class="panel-collapse collapse"><div class="panel-body"><ul class="breadcrumb">'
+                            txt += '<li class="active"><strong>' + $("#first-player").text() + "</strong>对战<strong>" + $("#second-player").text() + '</strong></li>';
+                            txt += '<li class="active">回合数:<strong>' + gomoku.turn + '</strong></li>';
+                            txt += '<li class="active"><strong>玩家' + (data["result"] + 1) + '</strong>获胜!</li>';
+                            txt += '</ul></div></div></div>';
+                            $("#record").append(txt);
                         }
                         if (gomoku.isGameOver) return;
                         if (col == "black")
