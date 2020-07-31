@@ -2,6 +2,8 @@
 
 [TOC]
 
+![](web.png)
+
 #### Mango
 
 ~~AI的名字~~
