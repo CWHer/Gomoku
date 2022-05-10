@@ -3,13 +3,13 @@
 #include <cstring>
 #include <ctime>
 
-extern int ai_side; //0: black, 1: white
+extern int ai_side; // 0: black, 1: white
 std::string ai_name = "your_ai_name_here";
 
 int turn = 0;
 int board[15][15];
 
-//init function is called once at the beginning
+// init function is called once at the beginning
 void init()
 {
     /* TODO: Replace this by your code */

@@ -23,12 +23,12 @@ const int phi = 50;
 unordered_map<unsigned, int> M;
 ofstream fout("test.out");
 
-//utility begin
-inline bool inboard(int &x, int &y) //inside board
+// utility begin
+inline bool inboard(int &x, int &y) // inside board
 {
     return x >= 0 && x < N && y >= 0 && y < N;
 }
-inline int opd(int dir) //opposite dir
+inline int opd(int dir) // opposite dir
 {
     return (dir + 4) % 8;
 }
@@ -39,7 +39,7 @@ inline int random_int(int min, int max)
     std::uniform_int_distribution<int> distribution(min, max);
     return distribution(generator);
 }
-inline int hamilton(int x1, int y1, int x2 = 7, int y2 = 7) //hamilton dist from (7,7) center
+inline int hamilton(int x1, int y1, int x2 = 7, int y2 = 7) // hamilton dist from (7,7) center
 {
     return abs(x1 - x2) + abs(y1 - y2);
 }
@@ -47,16 +47,16 @@ void printpos(Pos pos)
 {
     std::cout << "pos:" << pos.first << ',' << pos.second << std ::endl;
 }
-//utility end
+// utility end
 
-class Box //evaluate box
+class Box // evaluate box
 {
 public:
     unsigned seed[N][N];
-    unsigned hashvalue; //condition
+    unsigned hashvalue; // condition
     int board[N][N];
-    int bbs[N];   //board bit set
-    int score[2]; //black/white
+    int bbs[N];   // board bit set
+    int score[2]; // black/white
     inline std::pair<int, bool> trace(int x, int y, int dir, int col)
     {
         int ret = 0;
@@ -70,17 +70,17 @@ public:
             ret++;
         }
     }
-    void calc() //evaluate all
-    {           //to be optimized: only calc newly added
+    void calc() // evaluate all
+    {           // to be optimized: only calc newly added
         score[0] = score[1] = 0;
         // fprint();
         for (int i = 0; i < N; ++i)
             for (int j = 0; j < N; ++j)
                 if (board[i][j] != -1)
                 {
-                    //to avoid multiple calc
-                    //only dir in [0,4)
-                    //also opposite dir must not be placed with cur one
+                    // to avoid multiple calc
+                    // only dir in [0,4)
+                    // also opposite dir must not be placed with cur one
                     for (int dir = 0; dir < 4; ++dir)
                     {
                         std::pair<int, bool> p;
@@ -125,10 +125,10 @@ public:
         std::memset(bbs, 0, sizeof(bbs));
         std::memset(score, 0, sizeof(score));
     }
-    //return 2 when five in a row
-    //1 when three in a row without being blocked
-    //1 when four in a row
-    //default: 0
+    // return 2 when five in a row
+    // 1 when three in a row without being blocked
+    // 1 when four in a row
+    // default: 0
     int puton(int x, int y, int col)
     {
         // if (x == 2 && y == 0 && col == 0)
@@ -301,8 +301,9 @@ public:
     }
     bool empty55(int x, int y)
     {
-        int len = y - 2 >= 0 ? 0
-                             : y - 1 >= 0 ? 1 : 2;
+        int len = y - 2 >= 0   ? 0
+                  : y - 1 >= 0 ? 1
+                               : 2;
         int p = y - 2 + len;
         int ret = bbs[x] << len >> p & 31;
         if (x - 1 >= 0)
@@ -341,7 +342,8 @@ public:
             for (int j = 0; j < N; ++j)
             {
                 int col = getpos(i, j);
-                cout << (col == -1 ? '.' : col ? '1' : '0');
+                cout << (col == -1 ? '.' : col ? '1'
+                                               : '0');
             }
             cout << '\n';
         }
@@ -354,13 +356,14 @@ public:
             for (int j = 0; j < N; ++j)
             {
                 int col = getpos(i, j);
-                fout << (col == -1 ? '.' : col ? '1' : '0');
+                fout << (col == -1 ? '.' : col ? '1'
+                                               : '0');
             }
             fout << '\n';
         }
     }
-    int check33(int xx, int yy) //a density-biased evaluate func
-    {                           //implements like XO chess
+    int check33(int xx, int yy) // a density-biased evaluate func
+    {                           // implements like XO chess
         int ret = 0;
         for (int dir = 0; dir < 8; ++dir)
         {
@@ -411,8 +414,8 @@ int requiem(int side, int alpha, int beta, int dep, int max_dep, Pos &pos) // fi
                     pos = Pos(i, j);
                 box.putback(i, j);
                 return INF / 2 - dep * 1e7;
-                //win with least steps
-                //while lose with most steps
+                // win with least steps
+                // while lose with most steps
             }
             w.push_back(std::pair<Pos, int>(Pos(i, j), abs(box.getvalue(side) - pre)));
             if (side == ai_side && opt != 1)
@@ -422,7 +425,8 @@ int requiem(int side, int alpha, int beta, int dep, int max_dep, Pos &pos) // fi
         }
     std::sort(w.begin(), w.end(),
               [](const std::pair<Pos, int> &a,
-                 const std::pair<Pos, int> &b) { return a.second > b.second; });
+                 const std::pair<Pos, int> &b)
+              { return a.second > b.second; });
     if (w.empty())
         return box.getvalue(side);
     for (const auto &x : w)
@@ -463,7 +467,7 @@ int requiem(int side, int alpha, int beta, int dep, int max_dep, Pos &pos) // fi
     }
     return mxval;
 }
-int mmdfs(int side, int alpha, int beta, int dep, Pos &pos) //min-max
+int mmdfs(int side, int alpha, int beta, int dep, Pos &pos) // min-max
 {
     // if (dep == 5)
     dfscnt++;
@@ -492,18 +496,19 @@ int mmdfs(int side, int alpha, int beta, int dep, Pos &pos) //min-max
                     pos = Pos(i, j);
                 box.putback(i, j);
                 return INF / 2 - dep * 1e7;
-                //win with least steps
-                //while lose with most steps
+                // win with least steps
+                // while lose with most steps
             }
             w.push_back(std::pair<Pos, int>(Pos(i, j), abs(box.getvalue(side) - pre)));
             box.putback(i, j);
         }
     std::sort(w.begin(), w.end(),
               [](const std::pair<Pos, int> &a,
-                 const std::pair<Pos, int> &b) { return a.second == b.second
-                                                            ? hamilton(a.first.first, a.first.second) <
-                                                                  hamilton(b.first.first, b.first.second)
-                                                            : a.second > b.second; });
+                 const std::pair<Pos, int> &b)
+              { return a.second == b.second
+                           ? hamilton(a.first.first, a.first.second) <
+                                 hamilton(b.first.first, b.first.second)
+                           : a.second > b.second; });
     if (w.empty())
         return box.getvalue(side);
     for (const auto &x : w)
@@ -550,7 +555,7 @@ Pos checkswap()
     fout << "swapcheck" << std::endl;
     double _t = std::clock();
     Pos ret;
-    int val, nval; //not sawp val
+    int val, nval; // not sawp val
     val = mmdfs(ai_side ^ 1, -INF, INF, 1, ret);
     nval = mmdfs(ai_side, -INF, INF, 1, ret);
     if (val < nval)

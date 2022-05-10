@@ -14,7 +14,7 @@
 #include <unordered_map>
 
 typedef std::pair<int, int> Pos;
-extern int ai_side; //0: black, 1: white
+extern int ai_side; // 0: black, 1: white
 std::string ai_name = "mango";
 
 int turn = 0;
@@ -30,23 +30,23 @@ int phi;
 class Box;
 class Mango;
 
-//debug begin
-const bool _islocal = 1;         //log file control
-std::ofstream fout("mango.out"); //log file
+// debug begin
+const bool _islocal = 1;         // log file control
+std::ofstream fout("mango.out"); // log file
 void printpos(Pos pos)
 {
     if (!_islocal)
         return;
     fout << "pos:" << pos.first << ',' << pos.second << '\n';
 }
-//debug end
+// debug end
 
-//utility begin
-inline bool inboard(int &x, int &y) //inside board
+// utility begin
+inline bool inboard(int &x, int &y) // inside board
 {
     return x >= 0 && x < N && y >= 0 && y < N;
 }
-inline int opd(int dir) //opposite dir
+inline int opd(int dir) // opposite dir
 {
     return (dir + 4) % 8;
 }
@@ -57,21 +57,21 @@ inline int random_int(int min, int max)
     std::uniform_int_distribution<int> distribution(min, max);
     return distribution(generator);
 }
-inline int hamilton(int x1, int y1, int x2 = 7, int y2 = 7) //hamilton dist from (7,7) center
+inline int hamilton(int x1, int y1, int x2 = 7, int y2 = 7) // hamilton dist from (7,7) center
 {
     return abs(x1 - x2) + abs(y1 - y2);
 }
-//utility end
+// utility end
 
-class Box //board
+class Box // board
 {
 
 private:
     unsigned seed[N][N];
-    unsigned hashvalue; //condition
+    unsigned hashvalue; // condition
     int board[N][N];
-    int bbs[N];   //board bit set
-    int score[2]; //black/white
+    int bbs[N];   // board bit set
+    int score[2]; // black/white
     // longest continuous trace
     // plus whether end is blocked
     inline std::pair<int, bool> trace(int x, int y, int dir, int col)
@@ -87,7 +87,7 @@ private:
             ret++;
         }
     }
-    //evaluate all the board
+    // evaluate all the board
     void calc() // a deserted func, of no use in this version
     {
         score[0] = score[1] = 0;
@@ -95,9 +95,9 @@ private:
             for (int j = 0; j < N; ++j)
                 if (board[i][j] != -1)
                 {
-                    //to avoid multiple calc
-                    //only dir in [0,4)
-                    //also opposite dir must not be occupied with cur one
+                    // to avoid multiple calc
+                    // only dir in [0,4)
+                    // also opposite dir must not be occupied with cur one
                     for (int dir = 0; dir < 4; ++dir)
                     {
                         std::pair<int, bool> p;
@@ -131,10 +131,10 @@ public:
         std::memset(bbs, 0, sizeof(bbs));
         std::memset(score, 0, sizeof(score));
     }
-    //return 2 when five in a row
-    //1 when three in a row without being blocked
-    //1 when four in a row
-    //default: 0
+    // return 2 when five in a row
+    // 1 when three in a row without being blocked
+    // 1 when four in a row
+    // default: 0
     int puton(int x, int y, int col)
     {
         board[x][y] = col;
@@ -281,11 +281,12 @@ public:
     {
         return board[x][y];
     }
-    //check empty in 5*5
+    // check empty in 5*5
     bool empty55(int x, int y)
     {
-        int len = y - 2 >= 0 ? 0
-                             : y - 1 >= 0 ? 1 : 2;
+        int len = y - 2 >= 0   ? 0
+                  : y - 1 >= 0 ? 1
+                               : 2;
         int p = y - 2 + len;
         int ret = bbs[x] << len >> p & 31;
         if (x - 1 >= 0)
@@ -316,8 +317,8 @@ public:
 
         return !ret;
     }
-    int check33(int xx, int yy) //a density-biased evaluate func
-    {                           //implements like XO chess
+    int check33(int xx, int yy) // a density-biased evaluate func
+    {                           // implements like XO chess
         int ret = 0;
         for (int dir = 0; dir < 8; ++dir)
         {
@@ -345,9 +346,9 @@ private:
     int dfscnt;
     int w[N][N];
 
-    //prefer dense places
-    //especially the opposite side
-    //but it implements like go...
+    // prefer dense places
+    // especially the opposite side
+    // but it implements like go...
     Pos randput()
     {
         if (turn == 1 && ai_side == 0)
@@ -406,7 +407,8 @@ private:
             }
         std::sort(w.begin(), w.end(),
                   [](const std::pair<Pos, int> &a,
-                     const std::pair<Pos, int> &b) { return a.second > b.second; });
+                     const std::pair<Pos, int> &b)
+                  { return a.second > b.second; });
         if (w.empty())
             return box.getvalue(side);
         for (const auto &x : w)
@@ -445,7 +447,7 @@ private:
         return mxval;
     }
 
-    int mmdfs(int side, int alpha, int beta, int dep, int max_dep, Pos &pos) //min-max
+    int mmdfs(int side, int alpha, int beta, int dep, int max_dep, Pos &pos) // min-max
     {
         dfscnt++;
         if (dep == max_dep)
@@ -468,32 +470,33 @@ private:
                         pos = Pos(i, j);
                     box.putback(i, j);
                     return INF / 2 - dep * 1e7;
-                    //win with least steps
-                    //while lose with most steps
+                    // win with least steps
+                    // while lose with most steps
                 }
                 w.push_back(std::pair<Pos, int>(Pos(i, j), abs(box.getvalue(side) - pre)));
                 box.putback(i, j);
             }
-        //compromise method
+        // compromise method
         std::sort(w.begin(), w.end(),
                   [](const std::pair<Pos, int> &a,
-                     const std::pair<Pos, int> &b) { return a.second > b.second; });
+                     const std::pair<Pos, int> &b)
+                  { return a.second > b.second; });
 
-        //a good but slow method
-        // std::sort(w.begin(), w.end(),
-        //           [this](const std::pair<Pos, int> &a,
-        //                  const std::pair<Pos, int> &b) { return a.second == b.second
-        //                                                             ? box.check33(a.first.first, a.first.second) >
-        //                                                                   box.check33(b.first.first, b.first.second)
-        //                                                             : a.second > b.second; });
+        // a good but slow method
+        //  std::sort(w.begin(), w.end(),
+        //            [this](const std::pair<Pos, int> &a,
+        //                   const std::pair<Pos, int> &b) { return a.second == b.second
+        //                                                              ? box.check33(a.first.first, a.first.second) >
+        //                                                                    box.check33(b.first.first, b.first.second)
+        //                                                              : a.second > b.second; });
 
-        //a awful method
-        // std::sort(w.begin(), w.end(),
-        //           [](const std::pair<Pos, int> &a,
-        //              const std::pair<Pos, int> &b) { return a.second == b.second
-        //                                                         ? hamilton(a.first.first, a.first.second) <
-        //                                                               hamilton(b.first.first, b.first.second)
-        //                                                         : a.second > b.second; });
+        // a awful method
+        //  std::sort(w.begin(), w.end(),
+        //            [](const std::pair<Pos, int> &a,
+        //               const std::pair<Pos, int> &b) { return a.second == b.second
+        //                                                          ? hamilton(a.first.first, a.first.second) <
+        //                                                                hamilton(b.first.first, b.first.second)
+        //                                                          : a.second > b.second; });
         if (w.empty())
             return box.getvalue(side);
         for (const auto &x : w)
@@ -550,7 +553,7 @@ private:
     Pos IDAstar()
     {
         Pos ret;
-        //final strike
+        // final strike
         M.clear(), dfscnt = 0;
         if (_islocal)
             fout << "final strike" << '\n';
@@ -617,7 +620,7 @@ public:
         return ret;
     }
 
-    //debug
+    // debug
     void print()
     {
         if (!_islocal)
@@ -628,14 +631,15 @@ public:
             for (int j = 0; j < N; ++j)
             {
                 int col = box.getpos(i, j);
-                fout << (col == -1 ? '.' : col ? '1' : '0');
+                fout << (col == -1 ? '.' : col ? '1'
+                                               : '0');
             }
             fout << '\n';
         }
     }
 };
 
-//init function is called once at the beginning
+// init function is called once at the beginning
 void init()
 {
     /* TODO: Replace this by your code */
